@@ -118,7 +118,10 @@ public class Matrix
         return _matrixMultyplier.Multiply(this, matrix);
     }
 
-    
+    /// <summary>
+    /// Write matrix to the file.
+    /// </summary>
+    /// <param name="outputPath">Path where matrix will be located.</param>
     public void WriteToFile(string outputPath)
     {
         using(var writer = new StreamWriter(outputPath, false, Encoding.UTF8))
