@@ -28,7 +28,7 @@ public static class MatrixMultiplier
         {
             for (var j = 0; j < secondMatrix.ColumnsNumber; ++j)
             {
-                for (var k = 0; k < firstMatrix.ColumnsNumber; ++k)
+                for (var k = 0; k< firstMatrix.ColumnsNumber; ++k)
                 {
                     result[i, j] += firstMatrix[i, k] * secondMatrix[k, j];
                 }
@@ -54,19 +54,25 @@ public static class MatrixMultiplier
             var message = "Number of columns of the first matrix doesn't match with number of rows of the second one.";
             throw new DimensionsMismatchException(message);
         }
-        
+
         var result = new int[firstMatrix.RowsNumber, secondMatrix.ColumnsNumber];
-        var threads = new Thread[Math.Min(Environment.ProcessorCount, firstMatrix.ColumnsNumber)];
+        var threads = new Thread[Environment.ProcessorCount];
         
-        for (var i = 0; i < threads.Length; ++i)
+        var chunkSize = firstMatrix.RowsNumber / threads.Length + 1;
+        
+        for (var t = 0; t < threads.Length; ++t)
         {
-            var localI = i;
-            threads[i] = new Thread(() => {
-                for (int j = 0; j < firstMatrix.RowsNumber; ++j)
+            var localT = t;
+
+            threads[t] = new Thread(() => {
+                for (var i = localT * chunkSize; i < (localT + 1) * chunkSize && i < firstMatrix.RowsNumber; i += chunkSize)
                 {
-                    for (int k = 0; k < secondMatrix.ColumnsNumber; ++k)
+                    for (var j = 0; j < secondMatrix.ColumnsNumber; ++j)
                     {
-                        
+                        for (var k = 0; k < firstMatrix.ColumnsNumber; ++k)
+                        {
+                            result[i, j] += firstMatrix[i, k] * secondMatrix[k, j];
+                        }
                     }
                 }
             });

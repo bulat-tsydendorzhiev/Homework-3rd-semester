@@ -140,14 +140,14 @@ public class Matrix
             return false;
         }
         
-        if (otherMatrix.RowsNumber != RowsNumber || otherMatrix.RowsNumber != ColumnsNumber)
+        if (otherMatrix.RowsNumber != RowsNumber || otherMatrix.ColumnsNumber != ColumnsNumber)
         {
             return false;
         }
         
-        for (int i = 0; i < RowsNumber; ++i)
+        for (var i = 0; i < RowsNumber; ++i)
         {
-            for (int j = 0; j < ColumnsNumber; ++j)
+            for (var j = 0; j < ColumnsNumber; ++j)
             {
                 if (otherMatrix[i, j] != _matrix[i, j])
                 {

@@ -17,23 +17,19 @@ public class Tests
     }
 
     [TestCaseSource(typeof(TestDataClass), nameof(TestDataClass.ValidTestCases))]
-    public void SequentialMatrixMultiplication_ShouldReturn_RightAnswer((string FirstMatrixData, string SecondMatrixData, Matrix Expected) testData)
+    public void Sequential_MatrixMultiplication_ShouldReturn_RightAnswer((Matrix FirstMatrix, Matrix SecondMatrix, Matrix Expected) testData)
     {
-        var firstMatrix = new Matrix(testData.FirstMatrixData);
-        var secondMatrix = new Matrix(testData.SecondMatrixData);
-        var result = MatrixMultiplier.Multiply(firstMatrix, secondMatrix);
+        var resultSequential = MatrixMultiplier.Multiply(testData.FirstMatrix, testData.SecondMatrix);
 
-        Assert.That(result.Equals(testData.Expected), Is.True);
+        Assert.That(resultSequential.Equals(testData.Expected), Is.True);
     }
 
     [TestCaseSource(typeof(TestDataClass), nameof(TestDataClass.ValidTestCases))]
-    public void ParallelMatrixMultiplication_ShouldReturn_RightAnswer((string FirstMatrixData, string SecondMatrixData, Matrix Expected) testData)
+    public void Parallel_MatrixMultiplication_ShouldReturn_RightAnswer((Matrix FirstMatrix, Matrix SecondMatrix, Matrix Expected) testData)
     {
-        var firstMatrix = new Matrix(testData.FirstMatrixData);
-        var secondMatrix = new Matrix(testData.SecondMatrixData);
-        var result = MatrixMultiplier.MultiplyInParallel(firstMatrix, secondMatrix);
+        var resultParallel = MatrixMultiplier.MultiplyInParallel(testData.FirstMatrix, testData.SecondMatrix);
 
-        Assert.That(result.Equals(testData.Expected), Is.True);
+        Assert.That(resultParallel.Equals(testData.Expected), Is.True);
     }
 
     private class TestDataClass
@@ -45,19 +41,19 @@ public class Tests
             "../../../TestFiles/MatrixWithInvalidData.txt"
         };
         
-        public static (string, string, Matrix)[] ValidTestCases = 
+        public static (Matrix, Matrix, Matrix)[] ValidTestCases = 
         {
-            ("../../../TestFiles/1stMatrix.txt",
-            "../../../TestFiles/2ndMatrix.txt",
+            (new Matrix("../../../TestFiles/1stMatrix.txt"),
+            new Matrix("../../../TestFiles/2ndMatrix.txt"),
             new Matrix("../../../TestFiles/ExpectedResult1.txt")),
-            ("../../../TestFiles/1stMatrix.txt",
-            "../../../TestFiles/3rdMatrix.txt",
+            (new Matrix("../../../TestFiles/1stMatrix.txt"),
+            new Matrix("../../../TestFiles/3rdMatrix.txt"),
             new Matrix("../../../TestFiles/3rdMatrix.txt")),
-            ("../../../TestFiles/4thMatrix.txt",
-            "../../../TestFiles/1stMatrix.txt",
+            (new Matrix("../../../TestFiles/4thMatrix.txt"),
+            new Matrix("../../../TestFiles/1stMatrix.txt"),
             new Matrix("../../../TestFiles/ExpectedResult2.txt")),
-            ("../../../TestFiles/4thMatrix.txt",
-            "../../../TestFiles/3rdMatrix.txt",
+            (new Matrix("../../../TestFiles/4thMatrix.txt"),
+            new Matrix("../../../TestFiles/3rdMatrix.txt"),
             new Matrix("../../../TestFiles/ExpectedResult3.txt"))
         };
     }
