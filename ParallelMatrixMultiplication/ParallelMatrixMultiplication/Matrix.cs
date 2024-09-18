@@ -1,6 +1,6 @@
-using System.Text;
-
 namespace ParallelMatrixMultiplication;
+
+using System.Text;
 
 /// <summary>
 /// Class, which has methods for matrix multiplication.
@@ -8,27 +8,25 @@ namespace ParallelMatrixMultiplication;
 public class Matrix
 {
     /// <summary>
-    /// Gets number of columns in matrix.
-    /// </summary>
-    public int ColumnsNumber {get; }
-
-    /// <summary>
     /// Gets number of rows in matrix.
     /// </summary>
-    public int RowsNumber {get; }
+    public int RowsNumber => _matrix.GetLength(0);
 
-    private List<int[]> _matrix;
-    
-    private IMatrixMultyplier _matrixMultyplier;
+    /// <summary>
+    /// Gets number of columns in matrix.
+    /// </summary>
+    public int ColumnsNumber => _matrix.GetLength(1);
+
+    private int[,] _matrix;
 
     /// <summary>
     /// Initializes a new instance of <see cref="Matrix"/>.
     /// </summary>
-    /// <param name="path">Path to file with matrix.</param>
+    /// <param name="path">Path to file with rectangle matrix.</param>
     /// <exception cref="FileNotFoundException">Throws when file with given path doesn't exist.</exception>
     /// <exception cref="IncorrectMatrixException">Throws when empty file was given.</exception>
-    /// <exception cref="IncorrectMatrixException">Throws when incorrect matrix or its data was given.</exception>
-    public Matrix(string path, IMatrixMultyplier matrixMultyplier)
+    /// <exception cref="IncorrectMatrixException">Throws when incorrect matrix or invalid data was given.</exception>
+    public Matrix(string path)
     {
         if (!File.Exists(path))
         {
@@ -52,7 +50,7 @@ public class Matrix
             {
                 if (!int.TryParse(value, out int number))
                 {
-                    throw new IncorrectMatrixException("Incorrect matrix data was given.");
+                    throw new IncorrectMatrixException("Invalid matrix data was given.");
                 }
 
                 rowValues.Add(number);
@@ -66,22 +64,26 @@ public class Matrix
             matrix.Add([..rowValues]);
         }
 
-        RowsNumber = rows.Count;
-        ColumnsNumber = matrix[0].Length;
-        _matrix = matrix;
-        _matrixMultyplier = matrixMultyplier;
+        _matrix = new int[matrix.Count, matrix[0].Length];
+
+        for (var rowNumber = 0; rowNumber < matrix.Count; ++rowNumber)
+        {
+            for (var columnNumber = 0; columnNumber < matrix[0].Length; ++columnNumber)
+            {
+                _matrix[rowNumber, columnNumber] = matrix[rowNumber][columnNumber];
+            }
+        }
     }
 
     /// <summary>
     /// Initializes a new instance of <see cref="Matrix"/>.
     /// </summary>
-    /// <param name="newMatrix">New matrix.</param>
-    public Matrix(List<int[]> newMatrix)
+    /// <param name="newMatrix">Matrix with the ractangle form.</param>
+    /// <exception cref="ArgumentNullException">Throws when <see cref="newMatrix"/> is null.</exception>
+    public Matrix(int[,] newMatrix)
     {
         ArgumentNullException.ThrowIfNull(newMatrix);
 
-        RowsNumber = newMatrix.Count;
-        ColumnsNumber = newMatrix[0].Length;
         _matrix = newMatrix;
     }
 
@@ -91,7 +93,7 @@ public class Matrix
     /// <param name="rowIndex">Number of row.</param>
     /// <param name="columnIndex">Number of column.</param>
     /// <returns>Value by specified incices.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Throws when indices out of range.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Throws when <see cref="rowIndex"/> and <see cref="columnIndex"/> out of range.</exception>
     public int this[int rowIndex, int columnIndex]
     {
         get
@@ -101,21 +103,8 @@ public class Matrix
                 throw new ArgumentOutOfRangeException("Index out of range.");
             }
 
-            return _matrix[rowIndex][columnIndex];
+            return _matrix[rowIndex, columnIndex];
         }
-    }
-
-    /// <summary>
-    /// Multiply this matrix by given.
-    /// </summary>
-    /// <param name="matrix">Matrix to multiply by.</param>
-    /// <returns>Matrix with 1st matrix rows number and 2nd matrix columns number.</returns>
-    /// <exception cref="DimensionsMismatchException">
-    /// Throws when dimensions mismatch occurs during matrices multiplying.
-    /// </exception>
-    public Matrix MultiplyBy(Matrix matrix)
-    {
-        return _matrixMultyplier.Multiply(this, matrix);
     }
 
     /// <summary>
@@ -128,10 +117,46 @@ public class Matrix
         {
             for (var i = 0; i < RowsNumber; ++i)
             {
-                writer.Write(string.Join(' ', _matrix[i]));
+                for (var j = 0; j < ColumnsNumber; ++j)
+                {
+                    writer.Write(_matrix[i, j]);
+                    writer.Write(' ');
+                }
+
                 writer.Write("\n");
             }
         }
+    }
+
+    /// <summary>
+    /// Determines whether given values equals with this.
+    /// </summary>
+    /// <param name="otherMatrix">Rectangle matrix.</param>
+    /// <returns>true if <see cref="otherMatrix"/> values equals this matrix values; otherwise false.</returns>
+    public bool Equals(Matrix otherMatrix)
+    {
+        if (otherMatrix is null)
+        {
+            return false;
+        }
+        
+        if (otherMatrix.RowsNumber != RowsNumber || otherMatrix.RowsNumber != ColumnsNumber)
+        {
+            return false;
+        }
+        
+        for (int i = 0; i < RowsNumber; ++i)
+        {
+            for (int j = 0; j < ColumnsNumber; ++j)
+            {
+                if (otherMatrix[i, j] != _matrix[i, j])
+                {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
     }
 
     private bool AreValidIndices(int rowIndex, int columnIndex)

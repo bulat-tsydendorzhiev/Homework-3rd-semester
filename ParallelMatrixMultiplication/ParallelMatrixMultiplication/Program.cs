@@ -26,11 +26,11 @@ var path2 = args[1];
 
 try
 {
-    var firstMatrix = new Matrix(path1, new SequentialMatrixMultiplyer());
-    var secondMatrix = new Matrix(path2, new SequentialMatrixMultiplyer());
-    var result = firstMatrix.MultiplyBy(secondMatrix);
-
-    result.WriteToFile("ResultOfMultiplication.txt");
+    var firstMatrix = new Matrix(path1);
+    var secondMatrix = new Matrix(path2);
+    var result = MatrixMultiplier.Multiply(firstMatrix, secondMatrix); 
+    
+    result.WriteToFile("ResultOfMultiplication");
     Console.WriteLine("Done.");
 }
 catch (DimensionsMismatchException ex)
