@@ -65,7 +65,7 @@ public static class MatrixMultiplier
             var localT = t;
 
             threads[t] = new Thread(() => {
-                for (var i = localT * chunkSize; i < (localT + 1) * chunkSize && i < firstMatrix.RowsNumber; i += chunkSize)
+                for (var i = localT * chunkSize; i < (localT + 1) * chunkSize && i < firstMatrix.RowsNumber; ++i)
                 {
                     for (var j = 0; j < secondMatrix.ColumnsNumber; ++j)
                     {

@@ -3,10 +3,10 @@
 if (args.Length > 0 && args[0] == "-help")
 {
     var message = """
-    This is a program multiplies two matrices and write the result into the file.
+    This program multiplies two matrices and write the result into the file.
     
     Usage:
-    dotnet run <1st matrix file> <2nd matrix file>
+    dotnet run <1st matrix file> <2nd matrix file> <output file>
     
     """;
 
@@ -14,7 +14,7 @@ if (args.Length > 0 && args[0] == "-help")
     return 0;
 }
 
-if (args.Length != 2)
+if (args.Length != 3)
 {
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine("Incorrect number of data. Use -help to learn more.");
@@ -23,6 +23,7 @@ if (args.Length != 2)
 
 var path1 = args[0];
 var path2 = args[1];
+var outputPath = args[2];
 
 try
 {
@@ -30,7 +31,7 @@ try
     var secondMatrix = new Matrix(path2);
     var result = MatrixMultiplier.Multiply(firstMatrix, secondMatrix); 
     
-    result.WriteToFile("ResultOfMultiplication");
+    result.WriteToFile(outputPath);
     Console.WriteLine("Done.");
 }
 catch (DimensionsMismatchException ex)
