@@ -1,4 +1,9 @@
-﻿using ParallelMatrixMultiplication;
+﻿// <copyright file="Program.cs" company="bulat-tsydendorzhiev">
+// Copyright (c) bulat-tsydendorzhiev. All Rights Reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+// </copyright>
+
+using ParallelMatrixMultiplication;
 
 if (args.Length > 0 && args[0] == "-help")
 {
