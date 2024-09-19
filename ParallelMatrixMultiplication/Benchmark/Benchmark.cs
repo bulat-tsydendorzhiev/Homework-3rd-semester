@@ -1,3 +1,8 @@
+// <copyright file="Program.cs" company="bulat-tsydendorzhiev">
+// Copyright (c) bulat-tsydendorzhiev. All Rights Reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+// </copyright>
+
 using System.Diagnostics;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
@@ -8,22 +13,22 @@ using ParallelMatrixMultiplication;
 /// </summary>
 public class Benchmark
 {
-    private Random _random = new();
-
-    private List<(double ExpectedValue, double StandartDeviation)> _sequentialResults = []; 
-
-    private List<(double ExpectedValue, double StandartDeviation)> _parallelResults = [];
-
-    private List<(int Rows, int Columns)> _sizes = [(50, 50), (100, 100), (250, 300), (500, 500), (1000,1000)];
-
-    private readonly Stopwatch _stopwatch = new();
-
     /// <summary>
     /// Number of table columns (Matrix multiplier, size1 x size2, expected value, standart deviation).
     /// </summary>
     private const int NumberOfTableColumns = 4;
 
     private const int NumberOfLaunches = 5;
+
+    private readonly Stopwatch stopwatch = new ();
+
+    private readonly Random random = new ();
+
+    private readonly List<(double ExpectedValue, double StandartDeviation)> sequentialResults = new ();
+
+    private readonly List<(double ExpectedValue, double StandartDeviation)> parallelResults = new ();
+
+    private readonly List<(int Rows, int Columns)> sizes = [(50, 50), (100, 100), (250, 300), (500, 500), (1000, 1000)];
 
     /// <summary>
     /// Runs benchmark to compare speed of sequential and parallel matrix multiplications.
@@ -33,59 +38,59 @@ public class Benchmark
     /// <exception cref="FileNotFoundException">Throws when file with specified path doesn't exist.</exception>
     public void Run(string outputFileName)
     {
-        for (var i = 0; i < _sizes.Count; ++i)
+        for (var i = 0; i < this.sizes.Count; ++i)
         {
-            var _sequentialTimeResults = new long[NumberOfLaunches];
-            var _parallelTimeResults = new long[NumberOfLaunches];
-            
+            var sequentialTimeResults = new long[NumberOfLaunches];
+            var parallelTimeResults = new long[NumberOfLaunches];
+
             for (var j = 0; j < NumberOfLaunches; ++j)
             {
-                var firstMatrix = GenerateMatrix(_sizes[i].Rows, _sizes[i].Columns);
-                var secondMatrix = GenerateMatrix(_sizes[i].Columns, _sizes[i].Rows);
+                var firstMatrix = this.GenerateMatrix(this.sizes[i].Rows, this.sizes[i].Columns);
+                var secondMatrix = this.GenerateMatrix(this.sizes[i].Columns, this.sizes[i].Rows);
 
-                var sequentialTime = CalculateTime(firstMatrix, secondMatrix, MatrixMultiplier.Multiply);
-                var parallelTime = CalculateTime(firstMatrix, secondMatrix, MatrixMultiplier.MultiplyInParallel);
+                var sequentialTime = this.CalculateTime(firstMatrix, secondMatrix, MatrixMultiplier.Multiply);
+                var parallelTime = this.CalculateTime(firstMatrix, secondMatrix, MatrixMultiplier.MultiplyInParallel);
 
-                _sequentialTimeResults[j] = sequentialTime;
-                _parallelTimeResults[j] = parallelTime;
+                sequentialTimeResults[j] = sequentialTime;
+                parallelTimeResults[j] = parallelTime;
             }
 
-            _sequentialResults.Add(GetExpectedValueAndStandartDeviation(_sequentialTimeResults));
-            _parallelResults.Add(GetExpectedValueAndStandartDeviation(_parallelTimeResults));
+            this.sequentialResults.Add(GetExpectedValueAndStandartDeviation(sequentialTimeResults));
+            this.parallelResults.Add(GetExpectedValueAndStandartDeviation(parallelTimeResults));
         }
 
-        WriteDataToFile(outputFileName);
+        this.WriteDataToFile(outputFileName);
+    }
+
+    private static (double, double) GetExpectedValueAndStandartDeviation(long[] timeResults)
+    {
+        var expectedValue = timeResults.Sum() * 1d / timeResults.Length;
+        var standartDeviation = Math.Sqrt(timeResults.Sum(t => (t - expectedValue) * (t - expectedValue)) / (timeResults.Length - 1));
+        return (expectedValue, standartDeviation);
     }
 
     private Matrix GenerateMatrix(int numberOfRows, int numberOfColumns)
     {
         int[,] newMatrix = new int[numberOfRows, numberOfColumns];
-        
+
         for (var i = 0; i < numberOfRows; ++i)
         {
             for (var j = 0; j < numberOfColumns; ++j)
             {
-                newMatrix[i, j] = _random.Next(-1000, 1000);
+                newMatrix[i, j] = this.random.Next(-1000, 1000);
             }
         }
 
         return new Matrix(newMatrix);
     }
 
-    private long CalculateTime(Matrix firstMatrix, Matrix secondMatrix, Func<Matrix, Matrix, Matrix> Multiply)
+    private long CalculateTime(Matrix firstMatrix, Matrix secondMatrix, Func<Matrix, Matrix, Matrix> method)
     {
-        _stopwatch.Restart();
-        Multiply(firstMatrix, secondMatrix);
-        _stopwatch.Stop();
+        this.stopwatch.Restart();
+        method(firstMatrix, secondMatrix);
+        this.stopwatch.Stop();
 
-        return _stopwatch.ElapsedMilliseconds;
-    }
-
-    private static (double,double) GetExpectedValueAndStandartDeviation(long[] timeResults)
-    {
-        var expectedValue = timeResults.Sum() * 1d / timeResults.Length;
-        var standartDeviation = Math.Sqrt(timeResults.Sum(t => (t - expectedValue) * (t - expectedValue)) / (timeResults.Length - 1));
-        return (expectedValue, standartDeviation);
+        return this.stopwatch.ElapsedMilliseconds;
     }
 
     private void WriteDataToFile(string outputFileName)
@@ -102,10 +107,10 @@ public class Benchmark
             new PdfPCell(new Phrase("Standart deviation (ms)", font))
         ];
 
-        for (var i = 0; i < _sizes.Count; ++i)
+        for (var i = 0; i < this.sizes.Count; ++i)
         {
-            AddRow(cells, "Sequential", i, font);
-            AddRow(cells, "Parallel", i, font);
+            this.AddRow(cells, "Sequential", i, font);
+            this.AddRow(cells, "Parallel", i, font);
         }
 
         foreach (var cell in cells)
@@ -123,20 +128,20 @@ public class Benchmark
         Console.WriteLine("Benchmark is done.");
     }
 
-    private void AddRow(List<PdfPCell> cells, string MatrixMultiplierName, int numberOfRow, Font font)
+    private void AddRow(List<PdfPCell> cells, string matrixMultiplierName, int numberOfRow, Font font)
     {
-        cells.Add(new PdfPCell(new Phrase(MatrixMultiplierName, font)));
-        cells.Add(new PdfPCell(new Phrase($"{_sizes[numberOfRow].Rows} x {_sizes[numberOfRow].Columns}", font)));
+        cells.Add(new PdfPCell(new Phrase(matrixMultiplierName, font)));
+        cells.Add(new PdfPCell(new Phrase($"{this.sizes[numberOfRow].Rows} x {this.sizes[numberOfRow].Columns}", font)));
 
-        if (MatrixMultiplierName == "Parallel")
+        if (matrixMultiplierName == "Parallel")
         {
-            cells.Add(new PdfPCell(new Phrase(_parallelResults[numberOfRow].ExpectedValue.ToString(), font)));
-            cells.Add(new PdfPCell(new Phrase(_parallelResults[numberOfRow].StandartDeviation.ToString(), font)));
+            cells.Add(new PdfPCell(new Phrase(this.parallelResults[numberOfRow].ExpectedValue.ToString(), font)));
+            cells.Add(new PdfPCell(new Phrase(this.parallelResults[numberOfRow].StandartDeviation.ToString(), font)));
         }
         else
         {
-            cells.Add(new PdfPCell(new Phrase(_sequentialResults[numberOfRow].ExpectedValue.ToString(), font)));
-            cells.Add(new PdfPCell(new Phrase(_sequentialResults[numberOfRow].StandartDeviation.ToString(), font)));
+            cells.Add(new PdfPCell(new Phrase(this.sequentialResults[numberOfRow].ExpectedValue.ToString(), font)));
+            cells.Add(new PdfPCell(new Phrase(this.sequentialResults[numberOfRow].StandartDeviation.ToString(), font)));
         }
     }
 }
