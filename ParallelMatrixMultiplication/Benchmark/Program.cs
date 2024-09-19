@@ -1,1 +1,3 @@
-﻿var benchmark = new Matr
+﻿var benchmark = new Benchmark();
+
+benchmark.Run("ResultOfBenchmark");
