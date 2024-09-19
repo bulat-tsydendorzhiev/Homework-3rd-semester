@@ -1,3 +1,8 @@
+// <copyright file="Matrix.cs" company="bulat-tsydendorzhiev">
+// Copyright (c) bulat-tsydendorzhiev. All Rights Reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+// </copyright>
+
 namespace ParallelMatrixMultiplication;
 
 using System.Text;
@@ -10,17 +15,18 @@ public class Matrix
     /// <summary>
     /// Gets number of rows in matrix.
     /// </summary>
-    public int RowsNumber => _matrix.GetLength(0);
+    public int RowsNumber => this._matrix.GetLength(0);
 
     /// <summary>
     /// Gets number of columns in matrix.
     /// </summary>
-    public int ColumnsNumber => _matrix.GetLength(1);
+    public int ColumnsNumber => this._matrix.GetLength(1);
 
     private int[,] _matrix;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="Matrix"/>.
+    /// Initializes a new instance of the <see cref="Matrix"/> class.
+    /// Create new matrix from file.
     /// </summary>
     /// <param name="path">Path to file with rectangle matrix.</param>
     /// <exception cref="FileNotFoundException">Throws when file with given path doesn't exist.</exception>
@@ -55,28 +61,28 @@ public class Matrix
 
                 rowValues.Add(number);
             }
-            
+
             if (i > 0 && rowValues.Count != matrix[i - 1].Length)
             {
                 throw new IncorrectMatrixException("Incorrect matrix was given.");
             }
-            
+
             matrix.Add([..rowValues]);
         }
 
-        _matrix = new int[matrix.Count, matrix[0].Length];
+        this._matrix = new int[matrix.Count, matrix[0].Length];
 
         for (var rowNumber = 0; rowNumber < matrix.Count; ++rowNumber)
         {
             for (var columnNumber = 0; columnNumber < matrix[0].Length; ++columnNumber)
             {
-                _matrix[rowNumber, columnNumber] = matrix[rowNumber][columnNumber];
+                this._matrix[rowNumber, columnNumber] = matrix[rowNumber][columnNumber];
             }
         }
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="Matrix"/>.
+    /// Initializes a new instance of the <see cref="Matrix"/> class.
     /// </summary>
     /// <param name="newMatrix">Matrix with the ractangle form.</param>
     /// <exception cref="ArgumentNullException">Throws when <see cref="newMatrix"/> is null.</exception>
@@ -84,7 +90,7 @@ public class Matrix
     {
         ArgumentNullException.ThrowIfNull(newMatrix);
 
-        _matrix = newMatrix;
+        this._matrix = newMatrix;
     }
 
     /// <summary>
@@ -98,12 +104,12 @@ public class Matrix
     {
         get
         {
-            if (!AreValidIndices(rowIndex, columnIndex))
+            if (!this.AreValidIndices(rowIndex, columnIndex))
             {
                 throw new ArgumentOutOfRangeException("Index out of range.");
             }
 
-            return _matrix[rowIndex, columnIndex];
+            return this._matrix[rowIndex, columnIndex];
         }
     }
 
@@ -113,13 +119,13 @@ public class Matrix
     /// <param name="outputPath">Path where matrix will be located.</param>
     public void WriteToFile(string outputPath)
     {
-        using(var writer = new StreamWriter(outputPath, false, Encoding.UTF8))
+        using (var writer = new StreamWriter(outputPath, false, Encoding.UTF8))
         {
-            for (var i = 0; i < RowsNumber; ++i)
+            for (var i = 0; i < this.RowsNumber; ++i)
             {
-                for (var j = 0; j < ColumnsNumber; ++j)
+                for (var j = 0; j < this.ColumnsNumber; ++j)
                 {
-                    writer.Write(_matrix[i, j]);
+                    writer.Write(this._matrix[i, j]);
                     writer.Write(' ');
                 }
 
@@ -139,26 +145,26 @@ public class Matrix
         {
             return false;
         }
-        
-        if (otherMatrix.RowsNumber != RowsNumber || otherMatrix.ColumnsNumber != ColumnsNumber)
+
+        if (otherMatrix.RowsNumber != this.RowsNumber || otherMatrix.ColumnsNumber != this.ColumnsNumber)
         {
             return false;
         }
-        
-        for (var i = 0; i < RowsNumber; ++i)
+
+        for (var i = 0; i < this.RowsNumber; ++i)
         {
-            for (var j = 0; j < ColumnsNumber; ++j)
+            for (var j = 0; j < this.ColumnsNumber; ++j)
             {
-                if (otherMatrix[i, j] != _matrix[i, j])
+                if (otherMatrix[i, j] != this._matrix[i, j])
                 {
                     return false;
                 }
             }
         }
-        
+
         return true;
     }
 
     private bool AreValidIndices(int rowIndex, int columnIndex)
-        => rowIndex >= 0 && rowIndex < RowsNumber && columnIndex >= 0 && columnIndex < ColumnsNumber;
+        => rowIndex >= 0 && rowIndex < this.RowsNumber && columnIndex >= 0 && columnIndex < this.ColumnsNumber;
 }

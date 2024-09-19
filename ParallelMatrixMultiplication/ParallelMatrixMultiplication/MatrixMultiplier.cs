@@ -1,3 +1,8 @@
+// <copyright file="MatrixMultiplier.cs" company="bulat-tsydendorzhiev">
+// Copyright (c) bulat-tsydendorzhiev. All Rights Reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+// </copyright>
+
 namespace ParallelMatrixMultiplication;
 
 /// <summary>
@@ -28,7 +33,7 @@ public static class MatrixMultiplier
         {
             for (var j = 0; j < secondMatrix.ColumnsNumber; ++j)
             {
-                for (var k = 0; k< firstMatrix.ColumnsNumber; ++k)
+                for (var k = 0; k < firstMatrix.ColumnsNumber; ++k)
                 {
                     result[i, j] += firstMatrix[i, k] * secondMatrix[k, j];
                 }
@@ -57,14 +62,15 @@ public static class MatrixMultiplier
 
         var result = new int[firstMatrix.RowsNumber, secondMatrix.ColumnsNumber];
         var threads = new Thread[Environment.ProcessorCount];
-        
-        var chunkSize = firstMatrix.RowsNumber / threads.Length + 1;
-        
+
+        var chunkSize = (firstMatrix.RowsNumber / threads.Length) + 1;
+
         for (var t = 0; t < threads.Length; ++t)
         {
             var localT = t;
 
-            threads[t] = new Thread(() => {
+            threads[t] = new Thread(() =>
+            {
                 for (var i = localT * chunkSize; i < (localT + 1) * chunkSize && i < firstMatrix.RowsNumber; ++i)
                 {
                     for (var j = 0; j < secondMatrix.ColumnsNumber; ++j)
@@ -77,17 +83,17 @@ public static class MatrixMultiplier
                 }
             });
         }
-        
+
         foreach (var thread in threads)
         {
             thread.Start();
         }
-        
+
         foreach (var thread in threads)
         {
             thread.Join();
         }
-        
+
         return new Matrix(result);
     }
 }
