@@ -11,7 +11,7 @@ namespace Lazy;
 /// <typeparam name="T">The type of the value.</typeparam>
 public class SingleThreadedLazy<T> : ILazy<T>
 {
-    private readonly Func<T> _supplier;
+    private Func<T>? _supplier;
 
     private bool _isValueCreated = false;
 
@@ -35,8 +35,9 @@ public class SingleThreadedLazy<T> : ILazy<T>
         {
             _value = _supplier();
             _isValueCreated = true;
+            _supplier = null;
         }
 
-        return _value ?? throw new ArgumentNullException("The value is null.");
+        return _value ?? throw new ArgumentNullException("The created value is null.");
     }
 }

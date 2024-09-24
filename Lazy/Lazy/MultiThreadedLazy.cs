@@ -11,11 +11,13 @@ namespace Lazy;
 /// <typeparam name="T">The type of the value.</typeparam>
 public class MultiThreadedLazy<T> : ILazy<T>
 {
-    private readonly Func<T> _supplier;
+    private Func<T>? _supplier;
 
-    private bool _isValueCreated = false;
+    private volatile bool _isValueCreated = false;
 
     private T? _value;
+
+    private object _lockObject = new ();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MultiThreadedLazy"/> class.
@@ -31,6 +33,16 @@ public class MultiThreadedLazy<T> : ILazy<T>
     /// <inheritdoc/>
     public T Get()
     {
-        throw new NotImplementedException();
+        if (!_isValueCreated)
+        {
+            lock (_lockObject)
+            {
+                _value = _supplier();
+                _isValueCreated = true;
+                _supplier = null;
+            }
+        }
+
+        return _value ?? throw new ArgumentNullException("The created value is null.");
     }
 }
