@@ -19,14 +19,14 @@ public interface IMyTask<TResult>
     /// <summary>
     /// Gets a value indicating whether the result of the task.
     /// </summary>
-    /// <exception cref="ArgumentNullException">Throws when the function corresponding to the task has terminated with an exception.</exception>
+    /// <exception cref="AggregateException">Throws when the function corresponding to the task has terminated with an exception.</exception>
     public TResult Result { get; }
 
     /// <summary>
     /// Applies to the result of a given task and returns a new task accepted for execution.
     /// </summary>
     /// <typeparam name="TNewResult">The type of new result.</typeparam>
-    /// <param name="func">A function used to continue work with result.</param>
-    /// <returns>New task.</returns>
-    public TNewResult ContinueWith<TNewResult>(Func<TResult, TNewResult> func);
+    /// <param name="func">A function used to continue work with the result.</param>
+    /// <returns>New task for executing.</returns>
+    public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func);
 }
