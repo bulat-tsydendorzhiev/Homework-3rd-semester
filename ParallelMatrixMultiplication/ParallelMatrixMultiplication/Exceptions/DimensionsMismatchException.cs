@@ -1,5 +1,5 @@
-// <copyright file="DimensionsMismatchException.cs" company="bulat-tsydendorzhiev">
-// Copyright (c) bulat-tsydendorzhiev. All Rights Reserved.
+// <copyright file="DimensionsMismatchException.cs" company="Bulat Tsydendorzhiev">
+// Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
 
@@ -11,17 +11,18 @@ namespace ParallelMatrixMultiplication;
 public class DimensionsMismatchException : Exception
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="DimensionsMismatchException"> exception.
+    /// Initializes a new instance of the <see cref="DimensionsMismatchException"/> class.
     /// </summary>
     public DimensionsMismatchException()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="DimensionsMismatchException"> exception.
+    /// Initializes a new instance of the <see cref="DimensionsMismatchException"/> class.
     /// </summary>
-    /// <param name="message">Throwing message.</param>
-    public DimensionsMismatchException(string message) : base(message)
+    /// <param name="message">Exception Message.</param>
+    public DimensionsMismatchException(string message)
+        : base(message)
     {
     }
 }

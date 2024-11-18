@@ -1,5 +1,5 @@
-// <copyright file="Matrix.cs" company="bulat-tsydendorzhiev">
-// Copyright (c) bulat-tsydendorzhiev. All Rights Reserved.
+// <copyright file="Matrix.cs" company="Bulat Tsydendorzhiev">
+// Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
 
@@ -8,30 +8,18 @@ namespace ParallelMatrixMultiplication;
 using System.Text;
 
 /// <summary>
-/// Class, which has methods for matrix multiplication.
+/// Class that implements matrix.
 /// </summary>
 public class Matrix
 {
-    /// <summary>
-    /// Gets number of rows in matrix.
-    /// </summary>
-    public int RowsNumber => this._matrix.GetLength(0);
-
-    /// <summary>
-    /// Gets number of columns in matrix.
-    /// </summary>
-    public int ColumnsNumber => this._matrix.GetLength(1);
-
-    private int[,] _matrix;
+    private readonly int[,] _matrix;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Matrix"/> class.
-    /// Create new matrix from file.
     /// </summary>
-    /// <param name="path">Path to file with rectangle matrix.</param>
-    /// <exception cref="FileNotFoundException">Throws when file with given path doesn't exist.</exception>
-    /// <exception cref="IncorrectMatrixException">Throws when empty file was given.</exception>
-    /// <exception cref="IncorrectMatrixException">Throws when incorrect matrix or invalid data was given.</exception>
+    /// <param name="path">The path to the file with rectangle matrix.</param>
+    /// <exception cref="FileNotFoundException">Throws when file with specified path does not exist.</exception>
+    /// <exception cref="InvalidMatrixException">Throws when matrix is empty or its values are invalid, or number in each row is different.</exception>
     public Matrix(string path)
     {
         if (!File.Exists(path))
@@ -42,7 +30,7 @@ public class Matrix
         var rows = File.ReadLines(path).ToList();
         if (rows.Count == 0)
         {
-            throw new IncorrectMatrixException("Matrix cannot be empty.");
+            throw new InvalidMatrixException("Matrix cannot be empty.");
         }
 
         var matrix = new List<int[]>();
@@ -56,7 +44,7 @@ public class Matrix
             {
                 if (!int.TryParse(value, out int number))
                 {
-                    throw new IncorrectMatrixException("Invalid matrix data was given.");
+                    throw new InvalidMatrixException("Invalid matrix data was given.");
                 }
 
                 rowValues.Add(number);
@@ -64,19 +52,19 @@ public class Matrix
 
             if (i > 0 && rowValues.Count != matrix[i - 1].Length)
             {
-                throw new IncorrectMatrixException("Incorrect matrix was given.");
+                throw new InvalidMatrixException("Incorrect matrix was given.");
             }
 
             matrix.Add([..rowValues]);
         }
 
-        this._matrix = new int[matrix.Count, matrix[0].Length];
+        _matrix = new int[matrix.Count, matrix[0].Length];
 
         for (var rowNumber = 0; rowNumber < matrix.Count; ++rowNumber)
         {
             for (var columnNumber = 0; columnNumber < matrix[0].Length; ++columnNumber)
             {
-                this._matrix[rowNumber, columnNumber] = matrix[rowNumber][columnNumber];
+                _matrix[rowNumber, columnNumber] = matrix[rowNumber][columnNumber];
             }
         }
     }
@@ -84,14 +72,38 @@ public class Matrix
     /// <summary>
     /// Initializes a new instance of the <see cref="Matrix"/> class.
     /// </summary>
-    /// <param name="newMatrix">Matrix with the ractangle form.</param>
+    /// <param name="newMatrix">Matrix with the rectangle form.</param>
     /// <exception cref="ArgumentNullException">Throws when <see cref="newMatrix"/> is null.</exception>
+    /// <exception cref="InvalidMatrixException">Throws when <see cref="newMatrix"/> .</exception>
     public Matrix(int[,] newMatrix)
     {
         ArgumentNullException.ThrowIfNull(newMatrix);
 
-        this._matrix = newMatrix;
+        if (newMatrix.GetLength(0) == 0 || newMatrix.GetLength(1) == 0)
+        {
+            throw new InvalidMatrixException("Invalid matrix was given.");
+        }
+
+        _matrix = new int[newMatrix.GetLength(0), newMatrix.GetLength(1)];
+
+        for (var i = 0; i < newMatrix.GetLength(0); i++)
+        {
+            for (var j = 0; j < newMatrix.GetLength(1); j++)
+            {
+                _matrix[i, j] = newMatrix[i, j];
+            }
+        }
     }
+
+    /// <summary>
+    /// Gets number of rows in matrix.
+    /// </summary>
+    public int RowsNumber => _matrix.GetLength(0);
+
+    /// <summary>
+    /// Gets number of columns in matrix.
+    /// </summary>
+    public int ColumnsNumber => _matrix.GetLength(1);
 
     /// <summary>
     /// Gets the value by its indices.
@@ -104,12 +116,12 @@ public class Matrix
     {
         get
         {
-            if (!this.AreValidIndices(rowIndex, columnIndex))
+            if (!AreValidIndices(rowIndex, columnIndex))
             {
-                throw new ArgumentOutOfRangeException("Index out of range.");
+                throw new ArgumentOutOfRangeException();
             }
 
-            return this._matrix[rowIndex, columnIndex];
+            return _matrix[rowIndex, columnIndex];
         }
     }
 
@@ -119,26 +131,25 @@ public class Matrix
     /// <param name="outputPath">Path where matrix will be located.</param>
     public void WriteToFile(string outputPath)
     {
-        using (var writer = new StreamWriter(outputPath, false, Encoding.UTF8))
-        {
-            for (var i = 0; i < this.RowsNumber; ++i)
-            {
-                for (var j = 0; j < this.ColumnsNumber; ++j)
-                {
-                    writer.Write(this._matrix[i, j]);
-                    writer.Write(' ');
-                }
+        using var writer = new StreamWriter(outputPath, false, Encoding.UTF8);
 
-                writer.Write("\n");
+        for (var i = 0; i < RowsNumber; ++i)
+        {
+            for (var j = 0; j < ColumnsNumber; ++j)
+            {
+                writer.Write(_matrix[i, j]);
+                writer.Write(' ');
             }
+
+            writer.Write('\n');
         }
     }
 
     /// <summary>
-    /// Determines whether given values equals with this.
+    /// Returns a value indicating this instance is equal to a specified <see cref="Matrix"/> instance.
     /// </summary>
     /// <param name="otherMatrix">Rectangle matrix.</param>
-    /// <returns>true if <see cref="otherMatrix"/> values equals this matrix values; otherwise false.</returns>
+    /// <returns>true if <see cref="otherMatrix"/> values equals this matrix values; otherwise, false.</returns>
     public bool Equals(Matrix otherMatrix)
     {
         if (otherMatrix is null)
@@ -146,16 +157,16 @@ public class Matrix
             return false;
         }
 
-        if (otherMatrix.RowsNumber != this.RowsNumber || otherMatrix.ColumnsNumber != this.ColumnsNumber)
+        if (otherMatrix.RowsNumber != RowsNumber || otherMatrix.ColumnsNumber != ColumnsNumber)
         {
             return false;
         }
 
-        for (var i = 0; i < this.RowsNumber; ++i)
+        for (var i = 0; i < RowsNumber; ++i)
         {
-            for (var j = 0; j < this.ColumnsNumber; ++j)
+            for (var j = 0; j < ColumnsNumber; ++j)
             {
-                if (otherMatrix[i, j] != this._matrix[i, j])
+                if (otherMatrix[i, j] != _matrix[i, j])
                 {
                     return false;
                 }
@@ -166,5 +177,5 @@ public class Matrix
     }
 
     private bool AreValidIndices(int rowIndex, int columnIndex)
-        => rowIndex >= 0 && rowIndex < this.RowsNumber && columnIndex >= 0 && columnIndex < this.ColumnsNumber;
+        => rowIndex >= 0 && rowIndex < RowsNumber && columnIndex >= 0 && columnIndex < ColumnsNumber;
 }

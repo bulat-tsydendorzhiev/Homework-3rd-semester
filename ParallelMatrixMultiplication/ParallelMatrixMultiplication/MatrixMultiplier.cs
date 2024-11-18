@@ -1,5 +1,5 @@
-// <copyright file="MatrixMultiplier.cs" company="bulat-tsydendorzhiev">
-// Copyright (c) bulat-tsydendorzhiev. All Rights Reserved.
+// <copyright file="MatrixMultiplier.cs" company="Bulat Tsydendorzhiev">
+// Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
 
@@ -11,7 +11,7 @@ namespace ParallelMatrixMultiplication;
 public static class MatrixMultiplier
 {
     /// <summary>
-    /// Nultiply matrices sequentially.
+    /// Multiply matrices sequentially.
     /// </summary>
     /// <param name="firstMatrix">First rectangle matrix.</param>
     /// <param name="secondMatrix">Second rectangle matrix.</param>
@@ -44,7 +44,7 @@ public static class MatrixMultiplier
     }
 
     /// <summary>
-    /// Nultiply matrices in parallel.
+    /// Multiply matrices in parallel.
     /// </summary>
     /// <param name="firstMatrix">First rectangle matrix.</param>
     /// <param name="secondMatrix">Second rectangle matrix.</param>
@@ -61,7 +61,9 @@ public static class MatrixMultiplier
         }
 
         var result = new int[firstMatrix.RowsNumber, secondMatrix.ColumnsNumber];
-        var threads = new Thread[Environment.ProcessorCount];
+
+        var threadsCount = Math.Min(Environment.ProcessorCount, firstMatrix.RowsNumber);
+        var threads = new Thread[threadsCount];
 
         var chunkSize = (firstMatrix.RowsNumber / threads.Length) + 1;
 
