@@ -14,30 +14,27 @@ public class MyThreadPool
 {
     private readonly Thread[] _threads;
 
-    private readonly CancellationTokenSource _cts;
+    private readonly CancellationTokenSource _cts = new ();
 
-    private readonly ConcurrentQueue<Action> _tasks;
+    private readonly ConcurrentQueue<Action> _remainingTasks = new ();
 
-    private readonly object _lockObject;
+    private readonly object _lockObject = new ();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MyThreadPool"/> class.
     /// </summary>
-    /// <param name="threadsAmount">Amount of threads in thread pool.</param>
-    /// <exception cref="ArgumentException">Throws when invalid amount of threads was given.</exception>
-    public MyThreadPool(int threadsAmount)
+    /// <param name="numberOfThreads">Number of threads in thread pool.</param>
+    /// <exception cref="ArgumentException">Throws when invalid number of threads was given.</exception>
+    public MyThreadPool(int numberOfThreads)
     {
-        if (threadsAmount < 1)
+        if (numberOfThreads < 1)
         {
-            throw new ArgumentException("Amount of threads cannot be less that 1.");
+            throw new ArgumentException("Number of threads cannot be less that 1.");
         }
 
-        _cts = new ();
-        _tasks = new ();
-        _lockObject = new ();
-        _threads = new Thread[threadsAmount];
+        _threads = new Thread[numberOfThreads];
 
-        for (var i = 0; i < threadsAmount; ++i)
+        for (var i = 0; i < numberOfThreads; ++i)
         {
             _threads[i] = new Thread(ExecuteTask) { IsBackground = true };
             _threads[i].Start();
@@ -45,7 +42,7 @@ public class MyThreadPool
     }
 
     /// <summary>
-    /// 
+    /// Submits the task.
     /// </summary>
     /// <typeparam name="T">The type of the value.</typeparam>
     /// <param name="func">Executable task.</param>
@@ -53,30 +50,36 @@ public class MyThreadPool
     /// <exception cref="InvalidOperationException">Throws when thread pool was shut down.</exception>
     public IMyTask<T> Submit<T>(Func<T> func)
     {
+        ArgumentNullException.ThrowIfNull(func);
         if (_cts.IsCancellationRequested)
         {
             throw new InvalidOperationException("Thread pool was shut down.");
         }
 
-        lock (_lockObject)
-        {
-            var task = new MyTask<T>(func, this);
+        var newTask = new MyTask<T>(func, this);
 
-            return task;
-        }
+        SubmitTask(newTask.Run);
+
+        return newTask;
     }
 
     /// <summary>
-    /// Shuts down threads work.
+    /// Shuts down thread pool work.
+    /// New tasks are not allowed, running tasks are allowed to finish their work.
     /// </summary>
     public void Shutdown()
     {
-        if (_cts.Token.IsCancellationRequested)
+        if (_cts.IsCancellationRequested)
         {
             return;
         }
 
         _cts.Cancel();
+
+        lock (_lockObject)
+        {
+            Monitor.PulseAll(_lockObject);
+        }
 
         foreach (var thread in _threads)
         {
@@ -84,26 +87,59 @@ public class MyThreadPool
         }
     }
 
+    private void SubmitTask(Action task)
+    {
+        lock (_lockObject)
+        {
+            _remainingTasks.Enqueue(task);
+
+            Monitor.Pulse(_lockObject);
+        }
+    }
+
     private void ExecuteTask()
     {
-        
+        while (!_cts.IsCancellationRequested)
+        {
+            Action task;
+
+            lock (_lockObject)
+            {
+                while (!_remainingTasks.TryDequeue(out task!))
+                {
+                    if (_cts.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    Monitor.Wait(_lockObject);
+                }
+            }
+
+            task();
+        }
     }
 
     private class MyTask<T> : IMyTask<T>
     {
-        private readonly object _lockObject;
+        private readonly object _taskLockObject = new ();
 
         private readonly MyThreadPool _threadPool;
 
-        private Exception? _exception;
+        private readonly ConcurrentQueue<Action> _continuations = new ();
 
-        private Func<T>? _supplier;
+        private Exception? _occuredException;
+
+        private Func<T>? _task;
 
         private T _result;
 
-        public MyTask(Func<T> supplier, MyThreadPool threadPool)
+        public MyTask(Func<T> task, MyThreadPool threadPool)
         {
-            _supplier = supplier;
+            ArgumentNullException.ThrowIfNull(task);
+            ArgumentNullException.ThrowIfNull(threadPool);
+
+            _task = task;
             _threadPool = threadPool;
         }
 
@@ -115,40 +151,78 @@ public class MyThreadPool
         {
             get
             {
-                if (_threadPool._cts.Token.IsCancellationRequested)
+                lock (_taskLockObject)
                 {
-                    throw new InvalidOperationException();
-                }
+                    while (!IsCompleted)
+                    {
+                        Monitor.Wait(_taskLockObject);
+                    }
 
-                if (_exception is not null)
-                {
-                    throw new AggregateException(_exception);
-                }
+                    if (_occuredException is not null)
+                    {
+                        throw new AggregateException(_occuredException);
+                    }
 
-                return _result;
+                    return _result;
+                }
             }
         }
 
         /// <inheritdoc/>
-        public IMyTask<TNew> ContinueWith<TNew>(Func<T, TNew> func)
+        public IMyTask<TNew> ContinueWith<TNew>(Func<T, TNew> task)
         {
-            
+            ArgumentNullException.ThrowIfNull(task);
+            if (_threadPool._cts.IsCancellationRequested)
+            {
+                throw new InvalidOperationException("Thread pool was shut down");
+            }
+
+            lock (_taskLockObject)
+            {
+                if (IsCompleted)
+                {
+                    return _threadPool.Submit(() => task(Result));
+                }
+
+                var newTask = new MyTask<TNew>(() => task(Result), _threadPool);
+                _continuations.Enqueue(newTask.Run);
+
+                return newTask;
+            }
         }
 
-        private void ExecuteNewTask()
+        /// <summary>
+        /// Runs the task.
+        /// </summary>
+        public void Run()
         {
-            try
+            lock (_taskLockObject)
             {
-                _result = _supplier();
+                try
+                {
+                    _result = _task!();
+                }
+                catch (Exception e)
+                {
+                    _occuredException = e;
+                }
+                finally
+                {
+                    _task = null;
+                    IsCompleted = true;
+
+                    Monitor.Pulse(_taskLockObject);
+
+                    SubmitContinuations();
+                }
             }
-            catch (Exception e)
+        }
+
+        private void SubmitContinuations()
+        {
+            foreach (var task in _continuations)
             {
-                _exception = e;
-            }
-            finally
-            {
-                _supplier = null;
-                IsCompleted = true;
+                _threadPool.SubmitTask(task);
             }
         }
     }
