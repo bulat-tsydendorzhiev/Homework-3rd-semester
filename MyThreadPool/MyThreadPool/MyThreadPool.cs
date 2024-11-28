@@ -42,28 +42,6 @@ public class MyThreadPool
     }
 
     /// <summary>
-    /// Submits the task.
-    /// </summary>
-    /// <typeparam name="T">The type of the value.</typeparam>
-    /// <param name="func">Executable task.</param>
-    /// <returns>A new task.</returns>
-    /// <exception cref="InvalidOperationException">Throws when thread pool was shut down.</exception>
-    public IMyTask<T> Submit<T>(Func<T> func)
-    {
-        ArgumentNullException.ThrowIfNull(func);
-        if (_cts.IsCancellationRequested)
-        {
-            throw new InvalidOperationException("Thread pool was shut down.");
-        }
-
-        var newTask = new MyTask<T>(func, this);
-
-        SubmitTask(newTask.Run);
-
-        return newTask;
-    }
-
-    /// <summary>
     /// Shuts down thread pool work.
     /// New tasks are not allowed, running tasks are allowed to finish their work.
     /// </summary>
@@ -85,6 +63,28 @@ public class MyThreadPool
         {
             thread.Join();
         }
+    }
+
+    /// <summary>
+    /// Submits the task.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="task">Executable task.</param>
+    /// <returns>A new task.</returns>
+    /// <exception cref="InvalidOperationException">Throws when thread pool was shut down.</exception>
+    public IMyTask<T> Submit<T>(Func<T> task)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+        if (_cts.IsCancellationRequested)
+        {
+            throw new InvalidOperationException("Thread pool was shut down.");
+        }
+
+        var newTask = new MyTask<T>(task, this);
+
+        SubmitTask(newTask.Run);
+
+        return newTask;
     }
 
     private void SubmitTask(Action task)
@@ -184,7 +184,7 @@ public class MyThreadPool
                     return _threadPool.Submit(() => task(Result));
                 }
 
-                var newTask = new MyTask<TNew>(() => task(Result), _threadPool);
+                var newTask = new MyTask<TNew>(() => task.Invoke(Result), _threadPool);
                 _continuations.Enqueue(newTask.Run);
 
                 return newTask;
