@@ -95,6 +95,7 @@ public class Server
         }
 
         var entries = Directory.GetFileSystemEntries(path).ToArray();
+        Array.Sort(entries);
 
         await writer.WriteAsync($"{entries.Length}");
 
