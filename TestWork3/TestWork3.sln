@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkChat", "NetworkChat\NetworkChat.csproj", "{D09FF6DE-D516-4AC5-84CA-2B948299D631}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkChat.Tests", "NetworkChat.Tests\NetworkChat.Tests.csproj", "{C0B64FEA-1D0E-4F42-BEF9-89D4FE39D5CE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D09FF6DE-D516-4AC5-84CA-2B948299D631}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D09FF6DE-D516-4AC5-84CA-2B948299D631}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D09FF6DE-D516-4AC5-84CA-2B948299D631}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D09FF6DE-D516-4AC5-84CA-2B948299D631}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0B64FEA-1D0E-4F42-BEF9-89D4FE39D5CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0B64FEA-1D0E-4F42-BEF9-89D4FE39D5CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0B64FEA-1D0E-4F42-BEF9-89D4FE39D5CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0B64FEA-1D0E-4F42-BEF9-89D4FE39D5CE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
