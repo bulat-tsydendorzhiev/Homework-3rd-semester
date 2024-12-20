@@ -16,7 +16,7 @@ public class ChatClient : ChatMember
 {
     private int _port;
 
-    private string _hostName;
+    private IPAddress _ipAddress;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatClient"/> class.
@@ -25,19 +25,19 @@ public class ChatClient : ChatMember
     /// <param name="hostName">Host name.</param>
     /// <exception cref="ArgumentOutOfRangeException">Throws when port value is invalid.</exception>
     /// <exception cref="ArgumentException">Throws when host name is invalid.</exception>
-    public ChatClient(int port, string hostName) : base("Server")
+    public ChatClient(int port, string ip) : base("Server")
     {
         if (port < 0 || port > 65535)
         {
             throw new ArgumentOutOfRangeException("Port value must be more than 0 and less than 65536");
         }
 
-        if (!IPAddress.TryParse(hostName, out _))
+        if (!IPAddress.TryParse(ip, out _))
         {
-            throw new ArgumentException("Incorrect host name.");
+            throw new ArgumentException("Incorrect ip address.");
         }
 
-        _hostName = hostName;
+        _ipAddress = IPAddress.Parse(ip);
         _port = port;
     }
 
@@ -48,7 +48,7 @@ public class ChatClient : ChatMember
     public async Task StartAsync()
     {
         var client = new TcpClient();
-        await client.ConnectAsync(_hostName, _port);
+        await client.ConnectAsync(_ipAddress, _port);
 
         using var stream = client.GetStream();
         using var reader = new StreamReader(stream);
