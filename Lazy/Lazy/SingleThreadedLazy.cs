@@ -2,7 +2,6 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-
 namespace Lazy;
 
 /// <summary>
@@ -18,7 +17,7 @@ public class SingleThreadedLazy<T> : ILazy<T>
     private T? _value;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SingleThreadedLazy"/> class.
+    /// Initializes a new instance of the <see cref="SingleThreadedLazy{T}"/> class.
     /// </summary>
     /// <param name="func">The delegate that is invoked to produce the lazily initialized value when it is needed.</param>
     /// <exception cref="ArgumentNullException">Throws if <see cref="func"/> is null.</exception>
@@ -29,15 +28,15 @@ public class SingleThreadedLazy<T> : ILazy<T>
     }
 
     /// <inheritdoc/>
-    public T Get()
+    public T? Get()
     {
         if (!_isValueCreated)
         {
-            _value = _supplier();
+            _value = _supplier!();
             _isValueCreated = true;
             _supplier = null;
         }
 
-        return _value ?? throw new ArgumentNullException("The created value is null.");
+        return _value;
     }
 }
