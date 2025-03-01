@@ -5,8 +5,6 @@
 
 using FTPServer;
 
-int port = 7777;
-
-var server = new Server(port);
+using var server = new Server(12345);
 
 await server.Start();

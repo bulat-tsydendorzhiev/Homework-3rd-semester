@@ -12,7 +12,7 @@ using System.Text;
 /// <summary>
 /// Server that allows to make listing of files in directory on it and to download file.
 /// </summary>
-public class Server
+public class Server : IDisposable
 {
     private readonly CancellationTokenSource _cts;
 
@@ -32,6 +32,12 @@ public class Server
 
         _listener = new (IPAddress.Any, port);
         _cts = new ();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        _listener.Dispose();
     }
 
     /// <summary>

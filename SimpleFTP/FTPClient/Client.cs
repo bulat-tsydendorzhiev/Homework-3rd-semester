@@ -89,7 +89,7 @@ public class Client
         var entriesLength = int.Parse(entries[0]);
         if (entriesLength == -1)
         {
-            throw new DirectoryNotFoundException();
+            throw new DirectoryNotFoundException("There is no such directory on the server.");
         }
 
         var result = new List<(string, bool)>();
@@ -115,7 +115,7 @@ public class Client
         var size = long.Parse(CollectionsMarshal.AsSpan(sizeBytes));
         if (size == -1)
         {
-            throw new FileNotFoundException();
+            throw new FileNotFoundException("There is no such file in the server directory.");
         }
 
         var result = new byte[size];
