@@ -1,3 +1,7 @@
+// <copyright file="MyThreadPoolTests.cs" company="Bulat Tsydendorzhiev">
+// Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
+// Licensed under the MIT License. See LICENSE in the repository root for license information.
+// </copyright>
 namespace Tests;
 
 using MyThreadPool;
@@ -10,15 +14,11 @@ public class Tests
 
     [SetUp]
     public void Setup()
-    {
-        _threadPool = new (_numberOfThreads);
-    }
+        => _threadPool = new (_numberOfThreads); 
 
     [TearDown]
     public void Teardown()
-    {
-        _threadPool.Shutdown();
-    }
+        => _threadPool.Shutdown();
 
     [Test]
     public void ResultAfter_MultipleCallsOfContinueWith_ShouldBe_ExpectedValue()
@@ -31,14 +31,14 @@ public class Tests
         Assert.That(task.Result, Is.EqualTo(444));
     }
 
-    [Test]
+    [Test, Timeout(2000)]
     public void Task_ShouldFinish_ItsWork_AfterShutdown()
     {
         var task = _threadPool.Submit(() => 1);
 
         var newTask = task.ContinueWith(value =>
         {
-            Thread.Sleep(1000);
+            Thread.Sleep(100);
 
             return value + 1;
         });
@@ -48,7 +48,7 @@ public class Tests
         Assert.That(newTask.Result, Is.EqualTo(2));
     }
 
-    [Test]
+    [Test, Timeout(2000)]
     public void Tasks_ShouldNotBeAccepted_AftedShutdown()
     {
         var task = _threadPool.Submit(() => 123 * 123);
@@ -59,7 +59,7 @@ public class Tests
         Assert.Throws<InvalidOperationException>(() => _threadPool.Submit(() => 123 * 123));
     }
 
-    [Test]
+    [Test, Timeout(2000)]
     public void AggregateException_ShouldBeThrown_WithInvalidSupplier()
     {
         var task = _threadPool.Submit(() =>
@@ -72,7 +72,7 @@ public class Tests
     }
 
     [Test]
-    public void ArgumentNullException_ShouldBeThrown_NullSupplier()
+    public void ArgumentNullException_ShouldBeThrown_WithNullSupplierCase()
     {
         Func<int> func1 = null!;
         Func<int, int> func2 = null!;

@@ -2,7 +2,6 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-
 namespace MyThreadPool;
 
 /// <summary>
@@ -20,6 +19,7 @@ public interface IMyTask<TResult>
     /// Gets a value indicating whether the result of the task.
     /// </summary>
     /// <exception cref="AggregateException">Throws when the function corresponding to the task has terminated with an exception.</exception>
+    /// <exception cref="InvalidOperationException">Throws when the result of the function corresponding to the task is null.</exception>
     public TResult Result { get; }
 
     /// <summary>

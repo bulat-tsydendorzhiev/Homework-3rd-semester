@@ -5,6 +5,3 @@ dotnet_diagnostic.SA1101.severity = none
 
 # SA1309: Field '...' should not begin with an underscore.
 dotnet_diagnostic.SA1309.severity = none
-
-# CS8618: Non-nullable variable must contain a non-null value when exiting constructor.
-dotnet_diagnostic.CS8618.severity = none

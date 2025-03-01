@@ -2,7 +2,6 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-
 namespace MyThreadPool;
 
 using System.Collections.Concurrent;
@@ -75,31 +74,29 @@ public class MyThreadPool
     public IMyTask<T> Submit<T>(Func<T> task)
     {
         ArgumentNullException.ThrowIfNull(task);
-        if (_cts.IsCancellationRequested)
+
+        lock (_lockObject)
         {
-            throw new InvalidOperationException("Thread pool was shut down.");
+            if (_cts.IsCancellationRequested)
+            {
+                throw new InvalidOperationException("Thread pool was shut down.");
+            }
+
+            var newTask = new MyTask<T>(task, this);
+            SubmitTask(newTask.Run);
+
+            Monitor.Pulse(_lockObject);
+
+            return newTask;
         }
-
-        var newTask = new MyTask<T>(task, this);
-
-        SubmitTask(newTask.Run);
-
-        return newTask;
     }
 
     private void SubmitTask(Action task)
-    {
-        lock (_lockObject)
-        {
-            _remainingTasks.Enqueue(task);
-
-            Monitor.Pulse(_lockObject);
-        }
-    }
+        => _remainingTasks.Enqueue(task);
 
     private void ExecuteTask()
     {
-        while (!_cts.IsCancellationRequested)
+        while (!_cts.IsCancellationRequested || _remainingTasks.Count > 0)
         {
             Action task;
 
@@ -132,7 +129,7 @@ public class MyThreadPool
 
         private Func<T>? _task;
 
-        private T _result;
+        private T? _result;
 
         public MyTask(Func<T> task, MyThreadPool threadPool)
         {
@@ -163,31 +160,32 @@ public class MyThreadPool
                         throw new AggregateException(_occuredException);
                     }
 
-                    return _result;
+                    return _result ?? throw new InvalidOperationException("Task result is null.");
                 }
             }
         }
 
         /// <inheritdoc/>
-        public IMyTask<TNew> ContinueWith<TNew>(Func<T, TNew> task)
+        public IMyTask<TNew> ContinueWith<TNew>(Func<T, TNew> continuation)
         {
-            ArgumentNullException.ThrowIfNull(task);
-            if (_threadPool._cts.IsCancellationRequested)
-            {
-                throw new InvalidOperationException("Thread pool was shut down");
-            }
+            ArgumentNullException.ThrowIfNull(continuation);
 
             lock (_taskLockObject)
             {
-                if (IsCompleted)
+                if (_threadPool._cts.IsCancellationRequested)
                 {
-                    return _threadPool.Submit(() => task(Result));
+                    throw new InvalidOperationException("Thread pool was shut down.");
                 }
 
-                var newTask = new MyTask<TNew>(() => task.Invoke(Result), _threadPool);
-                _continuations.Enqueue(newTask.Run);
+                if (IsCompleted)
+                {
+                    return _threadPool.Submit(() => continuation(Result));
+                }
 
-                return newTask;
+                var continuationTask = new MyTask<TNew>(() => continuation.Invoke(Result), _threadPool);
+                _continuations.Enqueue(continuationTask.Run);
+
+                return continuationTask;
             }
         }
 
@@ -196,22 +194,22 @@ public class MyThreadPool
         /// </summary>
         public void Run()
         {
-            lock (_taskLockObject)
+            try
             {
-                try
-                {
-                    _result = _task!();
-                }
-                catch (Exception e)
-                {
-                    _occuredException = e;
-                }
-                finally
+                _result = _task!();
+            }
+            catch (Exception e)
+            {
+                _occuredException = e;
+            }
+            finally
+            {
+                lock (_taskLockObject)
                 {
                     _task = null;
                     IsCompleted = true;
 
-                    Monitor.Pulse(_taskLockObject);
+                    Monitor.PulseAll(_taskLockObject);
 
                     SubmitContinuations();
                 }
@@ -220,9 +218,13 @@ public class MyThreadPool
 
         private void SubmitContinuations()
         {
-            foreach (var task in _continuations)
+            foreach (var continuation in _continuations)
             {
-                _threadPool.SubmitTask(task);
+                lock (_taskLockObject)
+                {
+                    _threadPool.SubmitTask(continuation);
+                    Monitor.Pulse(_taskLockObject);
+                }
             }
         }
     }
