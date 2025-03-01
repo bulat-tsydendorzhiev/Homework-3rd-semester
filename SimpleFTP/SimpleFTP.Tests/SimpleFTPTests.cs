@@ -94,9 +94,9 @@ public class Tests
     {
         public static string[] Directories =
         {
-            "../../../TestDirectory",
-            "../../../TestDirectory/Subdirectory",
-            "../../../TestDirectory/Subdirectory/EmptyDirectory"
+            "../../../TestDirectory/",
+            "../../../TestDirectory/Subdirectory/",
+            "../../../TestDirectory/Subdirectory/EmptyDirectory/"
         };
 
         public static string[] Files =
