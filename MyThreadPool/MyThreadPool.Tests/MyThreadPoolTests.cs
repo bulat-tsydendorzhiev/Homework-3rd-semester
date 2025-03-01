@@ -21,6 +21,85 @@ public class Tests
         => _threadPool.Shutdown();
 
     [Test]
+    public void ThreadPool_ShouldHave_AtLeast_InitializedInConstructor_NumberOfWorkingThreads()
+    {
+        const int ExpectedResult = 1;
+        var tasks = new IMyTask<int>[_numberOfThreads];
+
+        for (var i = 0; i < _numberOfThreads; i++)
+        {
+            tasks[i] = _threadPool.Submit(() => ExpectedResult);
+        }
+
+        foreach (var task in tasks)
+        {
+            Assert.That(task.Result, Is.EqualTo(ExpectedResult));
+            Assert.That(task.IsCompleted, Is.True);
+        }
+    }
+
+    [Test, Timeout(6000)]
+    public void Submit_ShouldBe_ThreadSafe_WithShutdown()
+    {
+        var submitThread = new Thread(() =>
+        {
+            const int ExpectedResult = 1;
+
+            var task = _threadPool.Submit(() =>
+            {
+                Thread.Sleep(5000);
+
+                return ExpectedResult;
+            });
+
+            Assert.That(task.Result, Is.EqualTo(ExpectedResult));
+        });
+
+        var shutdownThread = new Thread(() =>
+        {
+            Thread.Sleep(100);
+            _threadPool.Shutdown();
+        });
+
+        submitThread.Start();
+        shutdownThread.Start();
+
+        submitThread.Join();
+        shutdownThread.Join();
+    }
+
+    [Test, Timeout(6000)]
+    public void ContinueWith_ShouldBe_ThreadSafe_WithShutdown()
+    {
+        var continueWithThread = new Thread(() =>
+        {
+            const int ExpectedResult = 1;
+
+            var task = _threadPool.Submit(() => ExpectedResult);
+            var newTask = task.ContinueWith(value =>
+            {
+                Thread.Sleep(5000);
+
+                return value;
+            });
+
+            Assert.That(newTask.Result, Is.EqualTo(ExpectedResult));
+        });
+
+        var shutdownThread = new Thread(() =>
+        {
+            Thread.Sleep(100);
+            _threadPool.Shutdown();
+        });
+
+        continueWithThread.Start();
+        shutdownThread.Start();
+
+        continueWithThread.Join();
+        shutdownThread.Join();
+    }
+
+    [Test]
     public void ResultAfter_MultipleCallsOfContinueWith_ShouldBe_ExpectedValue()
     {
         var task = _threadPool.Submit(() => 2 * 2)
@@ -31,30 +110,15 @@ public class Tests
         Assert.That(task.Result, Is.EqualTo(444));
     }
 
-    [Test, Timeout(2000)]
-    public void Task_ShouldFinish_ItsWork_AfterShutdown()
-    {
-        var task = _threadPool.Submit(() => 1);
-
-        var newTask = task.ContinueWith(value =>
-        {
-            Thread.Sleep(100);
-
-            return value + 1;
-        });
-
-        _threadPool.Shutdown();
-
-        Assert.That(newTask.Result, Is.EqualTo(2));
-    }
-
-    [Test, Timeout(2000)]
+    [Test, Timeout(1000)]
     public void Tasks_ShouldNotBeAccepted_AftedShutdown()
     {
         var task = _threadPool.Submit(() => 123 * 123);
 
+        Thread.Sleep(100);
         _threadPool.Shutdown();
 
+        Assert.That(task.Result, Is.EqualTo(123 * 123));
         Assert.Throws<InvalidOperationException>(() => task.ContinueWith(x => x + 1));
         Assert.Throws<InvalidOperationException>(() => _threadPool.Submit(() => 123 * 123));
     }
@@ -68,7 +132,7 @@ public class Tests
             return array[123];
         });
 
-        Assert.Throws<AggregateException>(() => { var result = task.Result; });
+        Assert.Throws<AggregateException>(() => { _ = task.Result; });
     }
 
     [Test]
