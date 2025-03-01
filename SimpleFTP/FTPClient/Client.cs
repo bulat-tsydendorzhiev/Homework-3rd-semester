@@ -47,7 +47,7 @@ public class Client
 
         await using var stream = client.GetStream();
 
-        var request = $"2 {path}\n";
+        var request = $"1 {path}\n";
 
         using var writer = new StreamWriter(stream);
         await writer.WriteAsync(request);
@@ -107,7 +107,7 @@ public class Client
         var sizeBytes = new List<byte>();
 
         int sizeByte;
-        while ((sizeByte = stream.ReadByte()) != ' ')
+        while ((sizeByte = stream.ReadByte()) != ' ' && sizeByte != -1)
         {
             sizeBytes.Add((byte)sizeByte);
         }
