@@ -1,13 +1,13 @@
-﻿// <copyright file="TestStatus.cs" company="Bulat Tsydendorzhiev">
+﻿// <copyright file="MyTestStatus.cs" company="Bulat Tsydendorzhiev">
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNunit.TestClasses;
+namespace MyNUnit.TestClasses;
 
 /// <summary>
 /// Identify test method status.
 /// </summary>
-public enum TestStatus
+public enum MyTestStatus
 {
     /// <summary>
     /// Identify ignored test.

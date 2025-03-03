@@ -2,12 +2,13 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNunit.TestClasses;
+namespace MyNUnit.TestClasses;
 
-using MyNunit.Attributes;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using MyNUnit.Assertion;
+using MyNUnit.Attributes;
 
 /// <summary>
 /// Represents a method that has test attribute.
@@ -22,9 +23,9 @@ public class TestMethod
 
     private readonly IEnumerable<MethodInfo> _afterMethods;
 
-    private readonly string? _ignoreReason = null;
+    private readonly string? _ignoreMessage = null;
 
-    private Type? _expectedException = null;
+    private Type? _expectedExceptionType = null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestMethod"/> class.
@@ -40,9 +41,9 @@ public class TestMethod
         _beforeMethods = beforeMethods;
         _afterMethods = afterMethods;
 
-        var testAttribute = test.GetCustomAttribute<TestAttribute>() !;
-        _ignoreReason = testAttribute.IgnoreMessage;
-        _expectedException = testAttribute.ExpectedException;
+        var testAttribute = test.GetCustomAttribute<MyTestAttribute>() !;
+        _ignoreMessage = testAttribute.IgnoreMessage;
+        _expectedExceptionType = testAttribute.ExpectedExceptionType;
     }
 
     /// <summary>
@@ -51,14 +52,13 @@ public class TestMethod
     /// <returns>The test result.</returns>
     public TestMethodResult Run()
     {
-        var stopWatch = new Stopwatch();
-        Type? occuredException = null;
-        var errorMessage = string.Empty;
-
-        if (_ignoreReason is not null)
+        if (_ignoreMessage is not null)
         {
-            return new TestMethodResult(_test.Name, TestStatus.Ignored, 0, _ignoreReason);
+            return new TestMethodResult(_test.Name, MyTestStatus.Ignored, 0, ignoreMessage: _ignoreMessage);
         }
+
+        var stopWatch = new Stopwatch();
+        var errorMessage = string.Empty;
 
         InvokeMethods(_beforeMethods);
         stopWatch.Start();
@@ -68,24 +68,33 @@ public class TestMethod
             _test.Invoke(_instance, null);
             stopWatch.Stop();
         }
-        catch (Exception e)
+        catch (TargetInvocationException e)
         {
             stopWatch.Stop();
 
-            occuredException = e.InnerException?.GetType();
+            var occuredExceptionType = e.InnerException?.GetType();
 
-            errorMessage = occuredException != _expectedException
-                            ? $"Expected {_expectedException}, but {occuredException} has occured."
-                            : e.Message;
+            errorMessage = occuredExceptionType == typeof(MyAssertException)
+                                ? e.Message
+                                : _expectedExceptionType is not null && occuredExceptionType != _expectedExceptionType
+                                ? $"Expected {_expectedExceptionType} but {occuredExceptionType} occured."
+                                : occuredExceptionType != _expectedExceptionType
+                                  || (occuredExceptionType is null && _expectedExceptionType is null)
+                                ? $"Unexpected exception: {occuredExceptionType}"
+                                : string.Empty;
         }
         finally
         {
             InvokeMethods(_afterMethods);
         }
 
-        return new TestMethodResult(_test.Name, TestStatus.Failed, stopWatch.ElapsedMilliseconds, errorMessage: errorMessage);
+        var status = errorMessage != string.Empty
+            ? MyTestStatus.Failed
+            : MyTestStatus.Passed;
+
+        return new TestMethodResult(_test.Name, status, stopWatch.ElapsedMilliseconds, errorMessage: errorMessage);
     }
 
-    private static void InvokeMethods(IEnumerable<MethodInfo> methods)
-        => Parallel.ForEach(methods, method => method.Invoke(null, null));
+    private void InvokeMethods(IEnumerable<MethodInfo> methods)
+        => Parallel.ForEach(methods, method => method.Invoke(_instance, null));
 }

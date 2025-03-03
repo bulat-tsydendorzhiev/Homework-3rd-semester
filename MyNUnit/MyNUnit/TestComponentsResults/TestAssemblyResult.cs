@@ -2,7 +2,7 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNunit.TestClasses;
+namespace MyNUnit.TestClasses;
 
 /// <summary>
 /// Defines the result of the classes test methods.
@@ -25,15 +25,15 @@ public record TestAssemblyResult
     /// <summary>
     /// Gets the test name of assembly with the classes with the tests.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; }
 
     /// <summary>
     /// Gets the time spent on all tests of all classes in this assembly in milliseconds.
     /// </summary>
-    public long TotalDuration { get; }
+    public long TotalDuration { get; private set; }
 
     /// <summary>
     /// Gets the status of the test.
     /// </summary>
-    public IEnumerable<TestClassResult> TestResults { get; }
+    public IEnumerable<TestClassResult> TestResults { get; private set; }
 }

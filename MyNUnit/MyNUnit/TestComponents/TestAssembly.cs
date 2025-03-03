@@ -2,11 +2,11 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNunit;
+namespace MyNUnit;
 
-using MyNunit.TestClasses;
 using System.Collections.Concurrent;
 using System.Reflection;
+using MyNUnit.TestClasses;
 
 /// <summary>
 /// Represents an assembly that has classes with test attributes on their methods.
@@ -22,7 +22,7 @@ public class TestAssembly
     public TestAssembly(Assembly assembly)
     {
         Name = assembly.FullName!;
-        _testClasses = assembly.GetTypes()
+        _testClasses = assembly.ExportedTypes
             .Where(t => t.IsClass)
             .Select(c => new TestClass(c))
             .ToList();
@@ -31,7 +31,7 @@ public class TestAssembly
     /// <summary>
     /// Gets the assembly name.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; }
 
     /// <summary>
     /// Runs tests for each assembly.

@@ -2,7 +2,7 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNunit.TestClasses;
+namespace MyNUnit.TestClasses;
 
 /// <summary>
 /// Defines the result of a test method.
@@ -17,35 +17,37 @@ public record TestMethodResult
     /// <param name="duration">Duration test was running.</param>
     /// <param name="ignoreMessage">Message that is actual if test is ignored.</param>
     /// <param name="errorMessage">Message that is actual if test is failed.</param>
-    public TestMethodResult(string name, TestStatus status, long duration, string? ignoreMessage = null, string? errorMessage = null)
+    public TestMethodResult(string name, MyTestStatus status, long duration, string? ignoreMessage = null, string? errorMessage = null)
     {
         Name = name;
         Status = status;
         Duration = duration;
+        IgnoreMessage = ignoreMessage;
+        ErrorMessage = errorMessage;
     }
 
     /// <summary>
     /// Gets the test name.
     /// </summary>
-    public string Name { get; }
+    public string Name { get; private set; }
 
     /// <summary>
     /// Gets the status of the test.
     /// </summary>
-    public TestStatus Status { get; }
+    public MyTestStatus Status { get; private set; }
 
     /// <summary>
     /// Gets the time spent on the test in milliseconds.
     /// </summary>
-    public long Duration { get; }
+    public long Duration { get; private set; }
 
     /// <summary>
     /// Gets the message why test was ignored.
     /// </summary>
-    public string? IgnoreMessage { get; }
+    public string? IgnoreMessage { get; private set; }
 
     /// <summary>
     /// Gets the message about error in the test.
     /// </summary>
-    public string? ErrorMessage { get; }
+    public string? ErrorMessage { get; private set; }
 }

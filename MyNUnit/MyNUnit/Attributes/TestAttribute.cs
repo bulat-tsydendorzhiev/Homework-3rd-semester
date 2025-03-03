@@ -2,32 +2,41 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNunit.Attributes;
+namespace MyNUnit.Attributes;
 
 /// <summary>
 /// Marks the method as test.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-public class TestAttribute : Attribute
+public class MyTestAttribute : Attribute
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="TestAttribute"/> class.
+    /// Initializes a new instance of the <see cref="MyTestAttribute"/> class.
     /// </summary>
-    /// <param name="expected">Exception that is expected as test result.</param>
     /// <param name="ignore">Ignore message to cancel the launch and indicate the reason.</param>
-    public TestAttribute(Type? expected = null, string? ignore = null)
+    /// <param name="expected">Exception type that is expected as test result.</param>
+    public MyTestAttribute(string? ignore = null, Type? expected = null)
     {
-        ExpectedException = expected;
+        ExpectedExceptionType = expected;
         IgnoreMessage = ignore;
     }
 
     /// <summary>
-    /// Gets expected exception.
+    /// Initializes a new instance of the <see cref="MyTestAttribute"/> class.
     /// </summary>
-    public Type? ExpectedException { get; }
+    /// <param name="expected">Exception type that is expected as test result.</param>
+    public MyTestAttribute(Type expected)
+    {
+        ExpectedExceptionType = expected;
+    }
 
     /// <summary>
     /// Gets ignore message.
     /// </summary>
-    public string? IgnoreMessage { get; }
+    public string? IgnoreMessage { get; private set; }
+
+    /// <summary>
+    /// Gets expected exception type.
+    /// </summary>
+    public Type? ExpectedExceptionType { get; private set; }
 }

@@ -2,20 +2,20 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNunit;
+namespace MyNUnit;
 
 using System.Reflection;
-using MyNunit.TestClasses;
+using MyNUnit.TestClasses;
 
 /// <summary>
-/// Allows to run tests.
+/// Allows to run tests and make report.
 /// </summary>
 public static class TestRunner
 {
     /// <summary>
     /// Runs tests located in the assembly at the specified path.
     /// </summary>
-    /// <param name="path">Path with assemblies.</param>
+    /// <param name="path">Path to directory with assemblies.</param>
     public static IEnumerable<TestAssemblyResult> RunTests(string path)
     {
         if (!Directory.Exists(path))

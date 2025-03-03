@@ -2,12 +2,12 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNunit.TestClasses;
+namespace MyNUnit.TestClasses;
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
-using MyNunit.Attributes;
+using MyNUnit.Attributes;
 
 /// <summary>
 /// Represents a class that has test attributes on its methods.
@@ -15,9 +15,7 @@ using MyNunit.Attributes;
 public class TestClass
 {
     private readonly List<MethodInfo> _beforeClassMethods;
-    private readonly List<MethodInfo> _beforeMethods;
     private readonly List<TestMethod> _testMethods;
-    private readonly List<MethodInfo> _afterMethods;
     private readonly List<MethodInfo> _afterClassMethods;
 
     /// <summary>
@@ -28,22 +26,21 @@ public class TestClass
     {
         Name = testingClass.Name;
 
-        var methods = testingClass.GetMethods();
-        _beforeClassMethods = GetMethodsWithAttribute<BeforeClassAttribute>(methods);
-        _beforeMethods = GetMethodsWithAttribute<BeforeAttribute>(methods);
-        _afterMethods = GetMethodsWithAttribute<AfterAttribute>(methods);
-        _afterClassMethods = GetMethodsWithAttribute<AfterClassAttribute>(methods);
+        var methods = testingClass.GetMethods().ToList();
+        _beforeClassMethods = GetMethodsWithAttribute(typeof(BeforeClassAttribute), methods).Where(method => method.IsStatic).ToList();
+        var beforeMethods = GetMethodsWithAttribute(typeof(BeforeAttribute), methods);
+        var afterMethods = GetMethodsWithAttribute(typeof(AfterAttribute), methods);
+        _afterClassMethods = GetMethodsWithAttribute(typeof(AfterClassAttribute), methods).Where(method => method.IsStatic).ToList();
 
-        _testMethods = GetMethodsWithAttribute<TestAttribute>(methods)
+        _testMethods = GetMethodsWithAttribute(typeof(MyTestAttribute), methods)
             .Select(method =>
             {
                 var instance = Activator.CreateInstance(testingClass);
 
                 ArgumentNullException.ThrowIfNull(instance);
 
-                return new TestMethod(instance, method, _beforeMethods, _afterMethods);
-            })
-            .ToList();
+                return new TestMethod(instance, method, beforeMethods, afterMethods);
+            }).ToList();
     }
 
     /// <summary>
@@ -69,7 +66,6 @@ public class TestClass
     private static void InvokeClassMethods(IEnumerable<MethodInfo> classMethods)
         => Parallel.ForEach(classMethods, classMethod => classMethod.Invoke(null, null));
 
-    private static List<MethodInfo> GetMethodsWithAttribute<T>(IEnumerable<MethodInfo> methods)
-        where T : Attribute
-            => methods.Where(m => m.GetCustomAttributes(typeof(T), false).Length > 0).ToList();
+    private static List<MethodInfo> GetMethodsWithAttribute(Type attributeType, IEnumerable<MethodInfo> methods)
+        => methods.Where(m => Attribute.IsDefined(m, attributeType)).ToList();
 }
