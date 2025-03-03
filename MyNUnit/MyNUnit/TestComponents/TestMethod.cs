@@ -2,7 +2,7 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNUnit.TestClasses;
+namespace MyNUnit.TestComponents;
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -59,8 +59,17 @@ public class TestMethod
 
         var stopWatch = new Stopwatch();
         var errorMessage = string.Empty;
+        var status = MyTestStatus.Passed;
 
-        InvokeMethods(_beforeMethods);
+        try
+        {
+            InvokeMethods(_beforeMethods);
+        }
+        catch (Exception e)
+        {
+            return new TestMethodResult(_test.Name, MyTestStatus.CancelledByMethodException, 0, errorMessage: $"Test was cancelled due to exception from \"Before\" method");
+        }
+
         stopWatch.Start();
 
         try
@@ -68,7 +77,7 @@ public class TestMethod
             _test.Invoke(_instance, null);
             stopWatch.Stop();
         }
-        catch (TargetInvocationException e)
+        catch (Exception e)
         {
             stopWatch.Stop();
 
@@ -79,18 +88,24 @@ public class TestMethod
                                 : _expectedExceptionType is not null && occuredExceptionType != _expectedExceptionType
                                 ? $"Expected {_expectedExceptionType} but {occuredExceptionType} occured."
                                 : occuredExceptionType != _expectedExceptionType
-                                  || (occuredExceptionType is null && _expectedExceptionType is null)
                                 ? $"Unexpected exception: {occuredExceptionType}"
                                 : string.Empty;
+            status = errorMessage == string.Empty
+                ? MyTestStatus.Passed
+                : MyTestStatus.Failed;
         }
         finally
         {
-            InvokeMethods(_afterMethods);
+            try
+            {
+                InvokeMethods(_afterMethods);
+            }
+            catch (Exception e)
+            {
+                errorMessage = $"Test was cancelled due to exception from \"After\" method";
+                status = MyTestStatus.CancelledByMethodException;
+            }
         }
-
-        var status = errorMessage != string.Empty
-            ? MyTestStatus.Failed
-            : MyTestStatus.Passed;
 
         return new TestMethodResult(_test.Name, status, stopWatch.ElapsedMilliseconds, errorMessage: errorMessage);
     }

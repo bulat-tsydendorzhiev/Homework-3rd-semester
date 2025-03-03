@@ -2,7 +2,7 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNUnit.TestClasses;
+namespace MyNUnit.TestComponents;
 
 /// <summary>
 /// Identify test method status.
@@ -23,4 +23,9 @@ public enum MyTestStatus
     /// Identify failed test.
     /// </summary>
     Failed = 1,
+
+    /// <summary>
+    /// Identify test whose result was cancelled due to exception from "before"/"after" methods.
+    /// </summary>
+    CancelledByMethodException = 2,
 }

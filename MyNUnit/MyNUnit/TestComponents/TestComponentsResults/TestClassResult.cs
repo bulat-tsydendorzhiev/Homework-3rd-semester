@@ -2,7 +2,7 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNUnit.TestClasses;
+namespace MyNUnit.TestComponents;
 
 /// <summary>
 /// Defines the result of the tests of the class.

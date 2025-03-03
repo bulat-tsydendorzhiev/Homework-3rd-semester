@@ -18,34 +18,34 @@ public class PassedTests
     public static volatile int afterClassMethodInvokesCount;
 
     [BeforeClass]
-    public static void BeforeClass_ShouldBeCalled_OneTime()
+    public static void BeforeClass()
     {
         Interlocked.Increment(ref beforeClassMethodInvokesCount);
     }
 
     [Before]
-    public void Before_ShouldBeCalled_BeforeEveryTest()
+    public void Before()
     {
         Interlocked.Increment(ref beforeMethodInvokesCount);
     }
 
     [After]
-    public void After_ShouldBeCalled_AfterEveryTest()
+    public void After()
     {
         Interlocked.Increment(ref afterMethodInvokesCount);
     }
 
     [AfterClass]
-    public static void AfterClass_ShouldBeCalled_OneTime()
+    public static void AfterClass()
     {
         Interlocked.Increment(ref afterClassMethodInvokesCount);
     }
 
-    //[MyTest(typeof(ArgumentException))]
-    //public void TestWithException()
-    //{
-    //    throw new ArgumentException();
-    //}
+    [MyTest(typeof(ArgumentException))]
+    public void TestWithException()
+    {
+        throw new ArgumentException();
+    }
 
     [MyTest]
     public void AssertThatTest()

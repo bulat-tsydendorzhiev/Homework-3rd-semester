@@ -2,11 +2,10 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-namespace MyNUnit;
+namespace MyNUnit.TestComponents;
 
 using System.Collections.Concurrent;
 using System.Reflection;
-using MyNUnit.TestClasses;
 
 /// <summary>
 /// Represents an assembly that has classes with test attributes on their methods.

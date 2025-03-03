@@ -2,9 +2,9 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-using MyNUnit.TestClasses;
-
 namespace MyNUnit;
+
+using MyNUnit.TestComponents;
 
 /// <summary>
 /// Represents a class that prints report for tests.
@@ -20,7 +20,7 @@ public static class Printer
     {
         await writer.WriteLineAsync("================================================================");
         await writer.WriteLineAsync($"Assembly name: {assemblyTestResult.Name}");
-        await writer.WriteLineAsync($"Total duration of tests in test classes: {assemblyTestResult.TotalDuration}");
+        await writer.WriteLineAsync($"Total duration of tests in test classes(ms): {assemblyTestResult.TotalDuration}");
 
         foreach (var classResult in assemblyTestResult.TestResults)
         {
@@ -34,7 +34,7 @@ public static class Printer
     {
         await writer.WriteLineAsync("----------------------------------------------------------------");
         await writer.WriteLineAsync($"\tClass name: {classTestResult.Name}");
-        await writer.WriteLineAsync($"\tTotal duration of tests: {classTestResult.TotalDuration}");
+        await writer.WriteLineAsync($"\tTotal duration of tests(ms): {classTestResult.TotalDuration}");
 
         foreach (var testResult in classTestResult.TestResults)
         {
@@ -45,7 +45,7 @@ public static class Printer
     private static async Task PrintReportForTestAsync(TestMethodResult testResult, TextWriter writer)
     {
         await writer.WriteLineAsync($"\t\tTest name: {testResult.Name}");
-        await writer.WriteLineAsync($"\t\tDuration: {testResult.Duration}");
+        await writer.WriteLineAsync($"\t\tDuration(ms): {testResult.Duration}");
 
         switch (testResult.Status)
         {
@@ -55,12 +55,16 @@ public static class Printer
 
             case MyTestStatus.Failed:
                 await writer.WriteLineAsync("\t\tTest result: failed");
-                await writer.WriteLineAsync($"\t\tTest error: {testResult.ErrorMessage}");
+                await writer.WriteLineAsync($"\t\tError reason: {testResult.ErrorMessage}");
                 break;
 
             case MyTestStatus.Ignored:
                 await writer.WriteLineAsync("\t\tTest result: ignored");
                 await writer.WriteLineAsync($"\t\tIgnore reason: {testResult.IgnoreMessage}");
+                break;
+            case MyTestStatus.CancelledByMethodException:
+                await writer.WriteLineAsync("\t\tTest result: cancelled");
+                await writer.WriteLineAsync($"\t\t Reason of cancel: {testResult.ErrorMessage}");
                 break;
         }
 

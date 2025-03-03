@@ -5,7 +5,7 @@
 namespace MyNUnit;
 
 using System.Reflection;
-using MyNUnit.TestClasses;
+using MyNUnit.TestComponents;
 
 /// <summary>
 /// Allows to run tests and make report.

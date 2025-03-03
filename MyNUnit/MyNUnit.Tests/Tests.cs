@@ -4,9 +4,8 @@
 // </copyright>
 namespace MyNUnit.Tests;
 
-using MyNUnit;
 using MyNUnit.Attributes;
-using MyNUnit.TestClasses;
+using MyNUnit.TestComponents;
 using System.Reflection;
 
 public class Tests
@@ -33,7 +32,7 @@ public class Tests
         var afterMethodInvokesCount = passedType.GetField("afterMethodInvokesCount")!.GetValue(null);
 
         Assert.That(beforeMethodInvokesCount, Is.EqualTo(expectedNumberOfInvokes));
-        Assert.That(afterMethodInvokesCount, Is.EqualTo(1));
+        Assert.That(afterMethodInvokesCount, Is.EqualTo(expectedNumberOfInvokes));
     }
 
     [Test]
@@ -52,6 +51,8 @@ public class Tests
     [TestCase("FailedTests", MyTestStatus.Failed)]
     [TestCase("IgnoredTests", MyTestStatus.Ignored)]
     [TestCase("PassedTests", MyTestStatus.Passed)]
+    [TestCase("CancelledTestsBecauseOfBefore", MyTestStatus.CancelledByMethodException)]
+    [TestCase("CancelledTestsBecauseOfAfter", MyTestStatus.CancelledByMethodException)]
     public void TestCases_ShouldHave_ExpectedStatus(string className, MyTestStatus expectedStatus)
     {
         foreach (var classTestResult in _assemblyResults.TestResults)
