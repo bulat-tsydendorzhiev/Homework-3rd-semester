@@ -27,5 +27,5 @@ public enum MyTestStatus
     /// <summary>
     /// Identify test whose result was cancelled due to exception from "before"/"after" methods.
     /// </summary>
-    CancelledByMethodException = 2,
+    Cancelled = 2,
 }

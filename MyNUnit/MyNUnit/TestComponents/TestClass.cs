@@ -18,6 +18,8 @@ public class TestClass
     private readonly List<TestMethod> _testMethods;
     private readonly List<MethodInfo> _afterClassMethods;
 
+    private readonly List<string> _invalidMethods = [];
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TestClass"/> class.
     /// </summary>
@@ -27,10 +29,14 @@ public class TestClass
         Name = testingClass.Name;
 
         var methods = testingClass.GetMethods().ToList();
-        _beforeClassMethods = GetMethodsWithAttribute(typeof(BeforeClassAttribute), methods).Where(method => method.IsStatic).ToList();
+
+        _beforeClassMethods = GetMethodsWithAttribute(typeof(BeforeClassAttribute), methods).ToList();
         var beforeMethods = GetMethodsWithAttribute(typeof(BeforeAttribute), methods);
         var afterMethods = GetMethodsWithAttribute(typeof(AfterAttribute), methods);
-        _afterClassMethods = GetMethodsWithAttribute(typeof(AfterClassAttribute), methods).Where(method => method.IsStatic).ToList();
+        _afterClassMethods = GetMethodsWithAttribute(typeof(AfterClassAttribute), methods).ToList();
+
+        CheckInvalidClassMethods(_beforeClassMethods);
+        CheckInvalidClassMethods(_afterClassMethods);
 
         _testMethods = GetMethodsWithAttribute(typeof(MyTestAttribute), methods)
             .Select(method =>
@@ -54,6 +60,11 @@ public class TestClass
     /// <returns>The classes' test methods results.</returns>
     public TestClassResult RunTests()
     {
+        if (_invalidMethods.Count > 0)
+        {
+            return new TestClassResult(Name, [], 0, _invalidMethods);
+        }
+
         var result = new ConcurrentBag<TestMethodResult>();
 
         InvokeClassMethods(_beforeClassMethods);
@@ -68,4 +79,15 @@ public class TestClass
 
     private static List<MethodInfo> GetMethodsWithAttribute(Type attributeType, IEnumerable<MethodInfo> methods)
         => methods.Where(m => Attribute.IsDefined(m, attributeType)).ToList();
+
+    private void CheckInvalidClassMethods(IEnumerable<MethodInfo> classMethods)
+    {
+        foreach (var method in classMethods)
+        {
+            if (!method.IsStatic)
+            {
+                _invalidMethods.Add(method.Name);
+            }
+        }
+    }
 }

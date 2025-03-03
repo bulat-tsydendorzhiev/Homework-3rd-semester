@@ -2,6 +2,8 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
+using System.Reflection;
+
 namespace MyNUnit.TestComponents;
 
 /// <summary>
@@ -15,11 +17,13 @@ public record TestClassResult
     /// <param name="name">Name of the test class.</param>
     /// <param name="testResults">Results of the tests from this class.</param>
     /// <param name="totalDuration">Total time spent on the tests.</param>
-    public TestClassResult(string name, IEnumerable<TestMethodResult> testResults, long totalDuration)
+    /// <param name="invalidMethodsName">Invalid methods.</param>
+    public TestClassResult(string name, IEnumerable<TestMethodResult> testResults, long totalDuration, List<string>? invalidMethodsName = null)
     {
         Name = name;
         TestResults = testResults;
         TotalDuration = totalDuration;
+        InvalidMethodsName = invalidMethodsName;
     }
 
     /// <summary>
@@ -36,4 +40,9 @@ public record TestClassResult
     /// Gets the status of the test.
     /// </summary>
     public IEnumerable<TestMethodResult> TestResults { get; private set; }
+
+    /// <summary>
+    /// Gets the invalid methods of the class.
+    /// </summary>
+    public List<string>? InvalidMethodsName { get; private set; }
 }

@@ -48,11 +48,24 @@ public class Tests
         Assert.That(afterClassMethodInvokesCount, Is.EqualTo(ExpectedNumberOfInvokes));
     }
 
+    [Test]
+    public void Invalid_Before_And_AfterClass_ShouldBe_ExpectedValue()
+    {
+        const int ExpectedNumberOfInvokes = 0;
+
+        var testClass = _assembly.DefinedTypes.First(t => t.Name == "InvalidTestCases");
+        var beforeClassMethodInvokesCount = testClass.GetField("beforeClassMethodInvokesCount")!.GetValue(null);
+        var afterClassMethodInvokesCount = testClass.GetField("afterClassMethodInvokesCount")!.GetValue(null);
+
+        Assert.That(beforeClassMethodInvokesCount, Is.EqualTo(ExpectedNumberOfInvokes));
+        Assert.That(afterClassMethodInvokesCount, Is.EqualTo(ExpectedNumberOfInvokes));
+    }
+
     [TestCase("FailedTests", MyTestStatus.Failed)]
     [TestCase("IgnoredTests", MyTestStatus.Ignored)]
     [TestCase("PassedTests", MyTestStatus.Passed)]
-    [TestCase("CancelledTestsBecauseOfBefore", MyTestStatus.CancelledByMethodException)]
-    [TestCase("CancelledTestsBecauseOfAfter", MyTestStatus.CancelledByMethodException)]
+    [TestCase("CancelledTestsBecauseOfBefore", MyTestStatus.Cancelled)]
+    [TestCase("CancelledTestsBecauseOfAfter", MyTestStatus.Cancelled)]
     public void TestCases_ShouldHave_ExpectedStatus(string className, MyTestStatus expectedStatus)
     {
         foreach (var classTestResult in _assemblyResults.TestResults)

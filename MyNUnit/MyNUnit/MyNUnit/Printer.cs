@@ -36,6 +36,18 @@ public static class Printer
         await writer.WriteLineAsync($"\tClass name: {classTestResult.Name}");
         await writer.WriteLineAsync($"\tTotal duration of tests(ms): {classTestResult.TotalDuration}");
 
+        if (classTestResult.InvalidMethodsName is not null)
+        {
+            await writer.WriteLineAsync("\n\tTests weren't invoked because of invalid methods:");
+
+            foreach (var invalidMethodName in classTestResult.InvalidMethodsName)
+            {
+                await writer.WriteLineAsync($"\t- {invalidMethodName}");
+            }
+
+            return;
+        }
+
         foreach (var testResult in classTestResult.TestResults)
         {
             await PrintReportForTestAsync(testResult, writer);
@@ -62,7 +74,7 @@ public static class Printer
                 await writer.WriteLineAsync("\t\tTest result: ignored");
                 await writer.WriteLineAsync($"\t\tIgnore reason: {testResult.IgnoreMessage}");
                 break;
-            case MyTestStatus.CancelledByMethodException:
+            case MyTestStatus.Cancelled:
                 await writer.WriteLineAsync("\t\tTest result: cancelled");
                 await writer.WriteLineAsync($"\t\t Reason of cancel: {testResult.ErrorMessage}");
                 break;

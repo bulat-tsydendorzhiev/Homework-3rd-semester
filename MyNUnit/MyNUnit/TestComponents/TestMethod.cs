@@ -18,13 +18,10 @@ public class TestMethod
     private readonly object _instance;
 
     private readonly IEnumerable<MethodInfo> _beforeMethods;
-
     private readonly MethodInfo _test;
-
     private readonly IEnumerable<MethodInfo> _afterMethods;
 
     private readonly string? _ignoreMessage = null;
-
     private Type? _expectedExceptionType = null;
 
     /// <summary>
@@ -67,7 +64,7 @@ public class TestMethod
         }
         catch (Exception e)
         {
-            return new TestMethodResult(_test.Name, MyTestStatus.CancelledByMethodException, 0, errorMessage: $"Test was cancelled due to exception from \"Before\" method");
+            return new TestMethodResult(_test.Name, MyTestStatus.Cancelled, 0, errorMessage: $"Test was cancelled due to {e.InnerException?.Message} from \"Before\" method");
         }
 
         stopWatch.Start();
@@ -102,8 +99,8 @@ public class TestMethod
             }
             catch (Exception e)
             {
-                errorMessage = $"Test was cancelled due to exception from \"After\" method";
-                status = MyTestStatus.CancelledByMethodException;
+                errorMessage = $"Test was cancelled due to {e.InnerException?.Message} from \"After\" method";
+                status = MyTestStatus.Cancelled;
             }
         }
 
