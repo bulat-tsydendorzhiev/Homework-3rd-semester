@@ -5,11 +5,39 @@
 
 using MyNUnit;
 
-var path = "../../../../TestCases/bin/Debug/net9.0/";
-
-var result = TestRunner.RunTests(path);
-
-foreach (var assemblyResult in result)
+if (args.Length != 1)
 {
-    await Printer.PrintReportForAssemblyAsync(assemblyResult, Console.Out);
+    Console.WriteLine("Invalid number of arguments. Use command \"dotnet run -help\" to learn more.");
+    return;
+}
+
+if (args[0] == "-help")
+{
+    Console.WriteLine("""
+        This command-line application is used to run tests contained in all assemblies located at path.
+
+        In order to use it enter the command:
+        dotnet run <path>
+
+        "path" - path to the directory
+
+        Enjoy ;)
+        """);
+    return;
+}
+
+var path = args[0];
+
+try
+{
+    var result = TestRunner.RunTests(path);
+
+    foreach (var assemblyResult in result)
+    {
+        await Printer.PrintReportForAssemblyAsync(assemblyResult, Console.Out);
+    }
+}
+catch (DirectoryNotFoundException e)
+{
+    Console.WriteLine(e.Message);
 }

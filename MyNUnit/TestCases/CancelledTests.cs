@@ -12,7 +12,7 @@ public class CancelledTestsBecauseOfBefore
     [Before]
     public void Before()
     {
-        throw new Exception();
+        throw new ArgumentNullException();
     }
 
     [MyTest]

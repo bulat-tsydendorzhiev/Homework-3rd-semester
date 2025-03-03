@@ -38,7 +38,7 @@ public static class Printer
 
         if (classTestResult.InvalidMethodsName is not null)
         {
-            await writer.WriteLineAsync("\n\tTests weren't invoked because of invalid methods:");
+            await writer.WriteLineAsync("\n\tTests weren't invoked because of the following invalid methods:");
 
             foreach (var invalidMethodName in classTestResult.InvalidMethodsName)
             {
@@ -76,7 +76,7 @@ public static class Printer
                 break;
             case MyTestStatus.Cancelled:
                 await writer.WriteLineAsync("\t\tTest result: cancelled");
-                await writer.WriteLineAsync($"\t\t Reason of cancel: {testResult.ErrorMessage}");
+                await writer.WriteLineAsync($"\t\tReason of cancel: {testResult.ErrorMessage}");
                 break;
         }
 

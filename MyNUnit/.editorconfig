@@ -11,3 +11,6 @@ dotnet_diagnostic.SA1615.severity = none
 
 # SA1200: Using directive should appear within a namespace declaration
 dotnet_diagnostic.SA1200.severity = none
+
+#SA1010 Opening square brackets should not be preceded by a space.
+dotnet_diagnostic.SA1010.severity = none
