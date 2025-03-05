@@ -12,5 +12,11 @@ dotnet_diagnostic.SA1615.severity = none
 # SA1200: Using directive should appear within a namespace declaration
 dotnet_diagnostic.SA1200.severity = none
 
-#SA1010 Opening square brackets should not be preceded by a space.
+#SA1010: Opening square brackets should not be preceded by a space.
 dotnet_diagnostic.SA1010.severity = none
+
+#SA1649: File name should match first type name
+dotnet_diagnostic.SA1649.severity = none
+
+#SA0001: XML comment analysis is disabled due to project configuration
+dotnet_diagnostic.SA0001.severity = none

@@ -65,7 +65,7 @@ public class TestMethod
         catch (Exception e)
         {
             errorMessage = $"Test was cancelled due to \"Before\" method's {e.InnerException?.InnerException?.GetType()}";
-            return new TestMethodResult(_test.Name, MyTestStatus.Canceled, 0, ErrorMessage: errorMessage);
+            return new TestMethodResult(_test.Name, MyTestStatus.Cancelled, 0, ErrorMessage: errorMessage);
         }
 
         stopWatch.Start();
@@ -101,7 +101,7 @@ public class TestMethod
             catch (Exception e)
             {
                 errorMessage = $"Test was cancelled due to \"After\" method's {e.InnerException?.InnerException?.GetType()}";
-                status = MyTestStatus.Canceled;
+                status = MyTestStatus.Cancelled;
             }
         }
 

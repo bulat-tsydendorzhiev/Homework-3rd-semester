@@ -60,7 +60,7 @@ public class TestClass
         catch (Exception e)
         {
             var errorMessage = $"Test was cancelled due to \"BeforeClass\" method's {e.InnerException?.InnerException?.GetType()}";
-            _cancelledResult = testMethods.Select(method => new TestMethodResult(method.Name, MyTestStatus.Canceled, 0, ErrorMessage: errorMessage)).ToList();
+            _cancelledResult = testMethods.Select(method => new TestMethodResult(method.Name, MyTestStatus.Cancelled, 0, ErrorMessage: errorMessage)).ToList();
         }
 
         if (_cancelledResult.Count != 0)
@@ -117,7 +117,7 @@ public class TestClass
 
             foreach (var testResult in result)
             {
-                testResult.Status = MyTestStatus.Canceled;
+                testResult.Status = MyTestStatus.Cancelled;
                 testResult.ErrorMessage = errorMessage;
             }
 

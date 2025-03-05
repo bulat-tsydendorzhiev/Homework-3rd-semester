@@ -79,7 +79,7 @@ public static class Printer
                 await writer.WriteLineAsync("\t\tTest result: ignored");
                 await writer.WriteLineAsync($"\t\tIgnore reason: {testResult.IgnoreMessage}");
                 break;
-            case MyTestStatus.Canceled:
+            case MyTestStatus.Cancelled:
                 await writer.WriteLineAsync("\t\tTest result: cancelled");
                 await writer.WriteLineAsync($"\t\tReason of cancel: {testResult.ErrorMessage}");
                 break;
