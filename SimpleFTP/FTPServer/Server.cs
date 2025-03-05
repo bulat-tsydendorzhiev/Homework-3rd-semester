@@ -30,15 +30,13 @@ public class Server : IDisposable
             throw new ArgumentOutOfRangeException("Port value must be more than 0 and less than 65536");
         }
 
-        _listener = new (IPAddress.Any, port);
-        _cts = new ();
+        _listener = new(IPAddress.Any, port);
+        _cts = new();
     }
 
     /// <inheritdoc/>
     public void Dispose()
-    {
-        _listener.Dispose();
-    }
+        => _listener.Dispose();
 
     /// <summary>
     /// Starts server work.
@@ -56,26 +54,26 @@ public class Server : IDisposable
 
             var task = Task.Run(async () =>
             {
-                await using var stream = client.GetStream();
-
-                using var reader = new StreamReader(stream);
-                using var writer = new StreamWriter(stream) { AutoFlush = true };
-
-                var request = await reader.ReadLineAsync(_cts.Token);
-
-                if (request != null)
+                using (client)
                 {
-                    if (request[0] == '1')
+                    await using var stream = client.GetStream();
+
+                    using var reader = new StreamReader(stream);
+
+                    var request = await reader.ReadLineAsync(_cts.Token);
+
+                    if (request != null)
                     {
-                        await ListAsync(request[2..], writer);
-                    }
-                    else if (request[0] == '2')
-                    {
-                        await GetAsync(request[2..], writer);
+                        if (request[0] == '1')
+                        {
+                            await ListAsync(request[2..], stream);
+                        }
+                        else if (request[0] == '2')
+                        {
+                            GetAsync(request[2..], stream);
+                        }
                     }
                 }
-
-                client.Close();
             });
 
             remainingTasks.Add(task);
@@ -92,8 +90,10 @@ public class Server : IDisposable
     public void Stop()
         => _cts.Cancel();
 
-    private static async Task ListAsync(string path, StreamWriter writer)
+    private static async Task ListAsync(string path, Stream stream)
     {
+        using var writer = new StreamWriter(stream);
+
         if (!Directory.Exists(path))
         {
             await writer.WriteLineAsync("-1");
@@ -113,16 +113,24 @@ public class Server : IDisposable
         await writer.WriteLineAsync();
     }
 
-    private static async Task GetAsync(string path, StreamWriter writer)
+    private static void GetAsync(string path, Stream stream)
     {
+        var writer = new BinaryWriter(stream);
+
         if (!File.Exists(path))
         {
-            await writer.WriteLineAsync("-1");
-            return;
+            writer.Write(-1L);
+            writer.Flush();
         }
 
-        var content = await File.ReadAllBytesAsync(path);
+        using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
 
-        await writer.WriteLineAsync($"{content.LongLength} {Encoding.UTF8.GetString(content)}");
+        writer.Write(fileStream.Length);
+        for (long i = 0; i < fileStream.Length; i++)
+        {
+            writer.Write((byte)fileStream.ReadByte());
+        }
+
+        writer.Flush();
     }
 }

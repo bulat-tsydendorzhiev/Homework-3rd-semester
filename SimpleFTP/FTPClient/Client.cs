@@ -5,6 +5,7 @@
 
 namespace FTPClient;
 
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
@@ -40,9 +41,9 @@ public class Client
     /// Lists files in server directory.
     /// </summary>
     /// <param name="path">Path to the directory on the server.</param>
-    public async Task<List<(string Name, bool IsDirectory)>> ListAsync(string path)
+    public async Task<List<(string name, bool isDirectory)>> ListAsync(string path)
     {
-        var client = new TcpClient();
+        using var client = new TcpClient();
         await client.ConnectAsync(_hostName, _port);
 
         await using var stream = client.GetStream();
@@ -73,17 +74,14 @@ public class Client
         await writer.WriteAsync(request);
         await writer.FlushAsync();
 
-        return HandleGetAsync(stream);
+        return HandleGet(stream);
     }
 
-    private static async Task<List<(string Name, bool IsDirectory)>> HandleListAsync(NetworkStream stream)
+    private static async Task<List<(string name, bool isDirectory)>> HandleListAsync(NetworkStream stream)
     {
         using var reader = new StreamReader(stream);
 
-        var response = await reader.ReadLineAsync();
-
-        ArgumentNullException.ThrowIfNull(response);
-
+        var response = await reader.ReadLineAsync() ?? throw new NetworkInformationException();
         var entries = response.Split();
 
         var entriesLength = int.Parse(entries[0]);
@@ -93,7 +91,6 @@ public class Client
         }
 
         var result = new List<(string, bool)>();
-
         for (var i = 1; i <= entriesLength; i++)
         {
             result.Add((entries[(2 * i) - 1], bool.Parse(entries[2 * i])));
@@ -102,17 +99,10 @@ public class Client
         return result;
     }
 
-    private static byte[] HandleGetAsync(NetworkStream stream)
+    private static byte[] HandleGet(NetworkStream stream)
     {
-        var sizeBytes = new List<byte>();
-
-        int sizeByte;
-        while ((sizeByte = stream.ReadByte()) != ' ' && sizeByte != -1)
-        {
-            sizeBytes.Add((byte)sizeByte);
-        }
-
-        var size = long.Parse(CollectionsMarshal.AsSpan(sizeBytes));
+        var reader = new BinaryReader(stream);
+        var size = reader.ReadInt64();
         if (size == -1)
         {
             throw new FileNotFoundException("There is no such file in the server directory.");

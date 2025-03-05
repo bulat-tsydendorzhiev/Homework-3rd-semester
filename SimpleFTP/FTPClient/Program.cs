@@ -14,7 +14,7 @@ if (args.Length != 2)
 if (args[0] == "-help")
 {
     Console.WriteLine("""
-    This programme allows to get file content or to make listing of a local server directory.
+    This program allows to get file content or to make listing of a local server directory.
     
     In order to use it enter: dotnet run <request> <path>
     "request" is number(1 or 2) that shows which option you want to use:
