@@ -32,6 +32,6 @@ public static class TestRunner
 
         Parallel.ForEach(assemblies, assembly => result.Add(assembly.RunTests()));
 
-        return result.ToList();
+        return result;
     }
 }

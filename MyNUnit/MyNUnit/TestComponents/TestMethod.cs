@@ -55,7 +55,7 @@ public class TestMethod
         }
 
         var stopWatch = new Stopwatch();
-        var errorMessage = string.Empty;
+        string? errorMessage = null;
         var status = MyTestStatus.Passed;
 
         try
@@ -64,8 +64,8 @@ public class TestMethod
         }
         catch (Exception e)
         {
-            errorMessage = $"Test was cancelled due to \"Before\" method {e.InnerException?.InnerException?.GetType()}";
-            return new TestMethodResult(_test.Name, MyTestStatus.Cancelled, 0, ErrorMessage: errorMessage);
+            errorMessage = $"Test was cancelled due to \"Before\" method's {e.InnerException?.InnerException?.GetType()}";
+            return new TestMethodResult(_test.Name, MyTestStatus.Canceled, 0, ErrorMessage: errorMessage);
         }
 
         stopWatch.Start();
@@ -82,7 +82,7 @@ public class TestMethod
             var occuredExceptionType = e.InnerException?.GetType();
 
             errorMessage = occuredExceptionType == typeof(MyAssertException)
-                                ? e.Message
+                                ? e.InnerException?.Message
                                 : _expectedExceptionType is not null && occuredExceptionType != _expectedExceptionType
                                 ? $"Expected {_expectedExceptionType} but {occuredExceptionType} occured."
                                 : occuredExceptionType != _expectedExceptionType
@@ -100,20 +100,20 @@ public class TestMethod
             }
             catch (Exception e)
             {
-                errorMessage = $"Test was cancelled due to \"After\" method {e.InnerException?.InnerException?.GetType()}";
-                status = MyTestStatus.Cancelled;
+                errorMessage = $"Test was cancelled due to \"After\" method's {e.InnerException?.InnerException?.GetType()}";
+                status = MyTestStatus.Canceled;
             }
         }
 
-        if (_expectedExceptionType is not null && errorMessage == string.Empty)
+        if (_expectedExceptionType is not null && errorMessage is null)
         {
-            errorMessage = $"Expected {_expectedExceptionType} but it didn't occured";
+            errorMessage = $"Expected {_expectedExceptionType} but it didn't occur";
             return new TestMethodResult(_test.Name, MyTestStatus.Failed, stopWatch.ElapsedMilliseconds, ErrorMessage: errorMessage);
         }
 
         if (status == MyTestStatus.Passed)
         {
-            errorMessage = string.Empty;
+            errorMessage = null;
         }
 
         return new TestMethodResult(_test.Name, status, stopWatch.ElapsedMilliseconds, ErrorMessage: errorMessage);

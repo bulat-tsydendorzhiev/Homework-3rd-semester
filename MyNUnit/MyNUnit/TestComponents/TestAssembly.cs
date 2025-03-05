@@ -42,6 +42,8 @@ public class TestAssembly
 
         Parallel.ForEach(_testClasses, testClass => result.Add(testClass.RunTests()));
 
-        return new TestAssemblyResult(Name, result.ToList(), result.Sum(testClassResult => testClassResult.TotalDuration));
+        var actualResult = result.Where(testClassResult => testClassResult.TestResults.Any() && testClassResult.InvalidMethodsName is null);
+
+        return new TestAssemblyResult(Name, actualResult, actualResult.Sum(testClassResult => testClassResult.TotalDuration));
     }
 }

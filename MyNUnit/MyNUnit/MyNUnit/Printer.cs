@@ -18,6 +18,11 @@ public static class Printer
     /// <param name="writer">Writer where will be report.</param>
     public static async Task PrintReportForAssemblyAsync(TestAssemblyResult assemblyTestResult, TextWriter writer)
     {
+        if (!assemblyTestResult.ClassesTestResults.Any())
+        {
+            return;
+        }
+
         await writer.WriteLineAsync("================================================================");
         await writer.WriteLineAsync($"Assembly name: {assemblyTestResult.Name}");
         await writer.WriteLineAsync($"Total duration of tests in test classes(ms): {assemblyTestResult.TotalDuration}");
@@ -74,7 +79,7 @@ public static class Printer
                 await writer.WriteLineAsync("\t\tTest result: ignored");
                 await writer.WriteLineAsync($"\t\tIgnore reason: {testResult.IgnoreMessage}");
                 break;
-            case MyTestStatus.Cancelled:
+            case MyTestStatus.Canceled:
                 await writer.WriteLineAsync("\t\tTest result: cancelled");
                 await writer.WriteLineAsync($"\t\tReason of cancel: {testResult.ErrorMessage}");
                 break;

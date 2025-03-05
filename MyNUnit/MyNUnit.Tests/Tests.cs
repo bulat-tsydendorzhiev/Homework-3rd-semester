@@ -84,8 +84,10 @@ public class Tests
     [TestCase("FailedTests", MyTestStatus.Failed)]
     [TestCase("IgnoredTests", MyTestStatus.Ignored)]
     [TestCase("PassedTests", MyTestStatus.Passed)]
+    [TestCase("CancelledTestsBecauseOfBeforeClass", MyTestStatus.Cancelled)]
     [TestCase("CancelledTestsBecauseOfBefore", MyTestStatus.Cancelled)]
     [TestCase("CancelledTestsBecauseOfAfter", MyTestStatus.Cancelled)]
+    [TestCase("CancelledTestsBecauseOfAfterClass", MyTestStatus.Cancelled)]
     public void TestCases_ShouldHave_ExpectedStatus(string className, MyTestStatus expectedStatus)
     {
         foreach (var classTestResult in _assemblyResults.ClassesTestResults)

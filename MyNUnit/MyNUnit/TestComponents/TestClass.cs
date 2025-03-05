@@ -15,10 +15,12 @@ using MyNUnit.Attributes;
 public class TestClass
 {
     private readonly List<MethodInfo> _beforeClassMethods;
-    private readonly List<TestMethod> _testMethods;
+    private readonly List<TestMethod> _testMethods = [];
     private readonly List<MethodInfo> _afterClassMethods;
 
     private readonly List<string> _invalidMethods = [];
+
+    private readonly List<TestMethodResult> _cancelledResult = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestClass"/> class.
@@ -30,26 +32,48 @@ public class TestClass
 
         var methods = testingClass.GetMethods().ToList();
 
-        _beforeClassMethods = GetMethodsWithAttribute(typeof(BeforeClassAttribute), methods).ToList();
+        _beforeClassMethods = GetMethodsWithAttribute(typeof(BeforeClassAttribute), methods);
         var beforeMethods = GetMethodsWithAttribute(typeof(BeforeAttribute), methods);
+        var testMethods = GetMethodsWithAttribute(typeof(MyTestAttribute), methods);
         var afterMethods = GetMethodsWithAttribute(typeof(AfterAttribute), methods);
-        _afterClassMethods = GetMethodsWithAttribute(typeof(AfterClassAttribute), methods).ToList();
+        _afterClassMethods = GetMethodsWithAttribute(typeof(AfterClassAttribute), methods);
 
+        CheckInvalidMethods(_beforeClassMethods);
+        CheckInvalidMethods(beforeMethods);
+        CheckInvalidMethods(testMethods);
+        CheckInvalidMethods(afterMethods);
+        CheckInvalidMethods(_afterClassMethods);
+
+        CheckInvalidTestMethods(testMethods);
         CheckInvalidClassMethods(_beforeClassMethods);
         CheckInvalidClassMethods(_afterClassMethods);
 
-        if (_invalidMethods.Count == 0)
+        if (_invalidMethods.Count != 0)
+        {
+            return;
+        }
+
+        try
         {
             InvokeClassMethods(_beforeClassMethods);
-
-            _testMethods = GetMethodsWithAttribute(typeof(MyTestAttribute), methods)
-                .Select(method =>
-                {
-                    var instance = Activator.CreateInstance(testingClass) ?? throw new NullReferenceException();
-
-                    return new TestMethod(instance, method, beforeMethods, afterMethods);
-                }).ToList();
         }
+        catch (Exception e)
+        {
+            var errorMessage = $"Test was cancelled due to \"BeforeClass\" method's {e.InnerException?.InnerException?.GetType()}";
+            _cancelledResult = testMethods.Select(method => new TestMethodResult(method.Name, MyTestStatus.Canceled, 0, ErrorMessage: errorMessage)).ToList();
+        }
+
+        if (_cancelledResult.Count != 0)
+        {
+            return;
+        }
+
+        _testMethods = testMethods.Select(method =>
+                                        {
+                                            var instance = Activator.CreateInstance(testingClass) ?? throw new NullReferenceException();
+
+                                            return new TestMethod(instance, method, beforeMethods, afterMethods);
+                                        }).ToList();
     }
 
     /// <summary>
@@ -63,24 +87,73 @@ public class TestClass
     /// <returns>The classes' test methods results.</returns>
     public TestClassResult RunTests()
     {
+        if (_testMethods.Count == 0)
+        {
+            return new TestClassResult(Name, [], 0);
+        }
+
         if (_invalidMethods.Count > 0)
         {
             return new TestClassResult(Name, [], 0, _invalidMethods);
         }
 
+        if (_cancelledResult.Count != 0)
+        {
+            return new TestClassResult(Name, _cancelledResult, 0);
+        }
+
         var result = new ConcurrentBag<TestMethodResult>();
-
         Parallel.ForEach(_testMethods, testMethod => result.Add(testMethod.Run()));
-        InvokeClassMethods(_afterClassMethods);
 
-        return new TestClassResult(Name, result.ToList(), result.Sum(testResult => testResult.Duration));
+        var totalDuration = result.Sum(testResult => testResult.Duration);
+
+        try
+        {
+            InvokeClassMethods(_afterClassMethods);
+        }
+        catch (Exception e)
+        {
+            var errorMessage = $"Test was cancelled due to \"AfterClass\" method's {e.InnerException?.InnerException?.GetType()}";
+
+            foreach (var testResult in result)
+            {
+                testResult.Status = MyTestStatus.Canceled;
+                testResult.ErrorMessage = errorMessage;
+            }
+
+            return new TestClassResult(Name, result, totalDuration);
+        }
+
+        return new TestClassResult(Name, result, totalDuration);
     }
+
+    private static List<MethodInfo> GetMethodsWithAttribute(Type attributeType, IEnumerable<MethodInfo> methods)
+        => methods.Where(m => Attribute.IsDefined(m, attributeType)).ToList();
 
     private static void InvokeClassMethods(IEnumerable<MethodInfo> classMethods)
         => Parallel.ForEach(classMethods, classMethod => classMethod.Invoke(null, null));
 
-    private static List<MethodInfo> GetMethodsWithAttribute(Type attributeType, IEnumerable<MethodInfo> methods)
-        => methods.Where(m => Attribute.IsDefined(m, attributeType)).ToList();
+    private void CheckInvalidMethods(IEnumerable<MethodInfo> methods)
+    {
+        foreach (var method in methods)
+        {
+            if (method.ReturnType != typeof(void) || method.GetParameters().Length != 0)
+            {
+                _invalidMethods.Add(method.Name);
+            }
+        }
+    }
+
+    private void CheckInvalidTestMethods(IEnumerable<MethodInfo> classMethods)
+    {
+        foreach (var method in classMethods)
+        {
+            if (method.IsStatic)
+            {
+                _invalidMethods.Add(method.Name);
+            }
+        }
+    }
 
     private void CheckInvalidClassMethods(IEnumerable<MethodInfo> classMethods)
     {

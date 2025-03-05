@@ -22,4 +22,15 @@ public class InvalidTestCases
     {
         Interlocked.Increment(ref afterClassMethodInvokesCount);
     }
+
+    [MyTest]
+    public int TestMethod_WithNonVoid_ReturningType()
+    {
+        return 1;
+    }
+
+    [MyTest]
+    public void TestMethod_WithParameters(int value)
+    {
+    }
 }
