@@ -7,47 +7,11 @@ namespace MyNUnit.TestComponents;
 /// <summary>
 /// Defines the result of a test method.
 /// </summary>
-public record TestMethodResult
+/// <param name="Name">Gets the test name.</param>
+/// <param name="Status">Gets the status of the test.</param>
+/// <param name="Duration">Gets the time spent on the test in milliseconds.</param>
+/// <param name="IgnoreMessage">Gets the message why test was ignored.</param>
+/// <param name="ErrorMessage">Gets the message about error in the test.</param>
+public record TestMethodResult(string Name, MyTestStatus Status, long Duration, string? IgnoreMessage = null, string? ErrorMessage = null)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TestMethodResult"/> class.
-    /// </summary>
-    /// <param name="name">Name of the test method.</param>
-    /// <param name="status">Status of the test.</param>
-    /// <param name="duration">Duration test was running.</param>
-    /// <param name="ignoreMessage">Message that is actual if test is ignored.</param>
-    /// <param name="errorMessage">Message that is actual if test is failed.</param>
-    public TestMethodResult(string name, MyTestStatus status, long duration, string? ignoreMessage = null, string? errorMessage = null)
-    {
-        Name = name;
-        Status = status;
-        Duration = duration;
-        IgnoreMessage = ignoreMessage;
-        ErrorMessage = errorMessage;
-    }
-
-    /// <summary>
-    /// Gets the test name.
-    /// </summary>
-    public string Name { get; private set; }
-
-    /// <summary>
-    /// Gets the status of the test.
-    /// </summary>
-    public MyTestStatus Status { get; private set; }
-
-    /// <summary>
-    /// Gets the time spent on the test in milliseconds.
-    /// </summary>
-    public long Duration { get; private set; }
-
-    /// <summary>
-    /// Gets the message why test was ignored.
-    /// </summary>
-    public string? IgnoreMessage { get; private set; }
-
-    /// <summary>
-    /// Gets the message about error in the test.
-    /// </summary>
-    public string? ErrorMessage { get; private set; }
 }

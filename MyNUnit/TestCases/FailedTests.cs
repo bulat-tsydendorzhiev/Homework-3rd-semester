@@ -30,6 +30,11 @@ public class FailedTests
         throw new ArgumentNullException();
     }
 
+    [MyTest(typeof(ArgumentException))]
+    public void TestWithoutThrowingException_ButWithExpectedException()
+    {
+    }
+
     [MyTest]
     public void TestWithAssertThat()
     {

@@ -12,7 +12,7 @@ using System.Reflection;
 /// </summary>
 public class TestAssembly
 {
-    private List<TestClass> _testClasses;
+    private readonly List<TestClass> _testClasses;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestAssembly"/> class.

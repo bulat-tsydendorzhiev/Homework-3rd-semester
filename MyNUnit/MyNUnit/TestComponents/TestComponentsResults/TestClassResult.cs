@@ -2,47 +2,15 @@
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
-using System.Reflection;
-
 namespace MyNUnit.TestComponents;
 
 /// <summary>
 /// Defines the result of the tests of the class.
 /// </summary>
-public record TestClassResult
+/// <param name="Name">Gets the test name of the class with tests.</param>
+/// <param name="TestResults">Gets the results of all tests of class.</param>
+/// <param name="TotalDuration">Gets the time spent on all tests in milliseconds.</param>
+/// <param name="InvalidMethodsName">Gets the invalid methods of the class.</param>
+public record TestClassResult(string Name, IEnumerable<TestMethodResult> TestResults, long TotalDuration, List<string>? InvalidMethodsName = null)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TestClassResult"/> class.
-    /// </summary>
-    /// <param name="name">Name of the test class.</param>
-    /// <param name="testResults">Results of the tests from this class.</param>
-    /// <param name="totalDuration">Total time spent on the tests.</param>
-    /// <param name="invalidMethodsName">Invalid methods.</param>
-    public TestClassResult(string name, IEnumerable<TestMethodResult> testResults, long totalDuration, List<string>? invalidMethodsName = null)
-    {
-        Name = name;
-        TestResults = testResults;
-        TotalDuration = totalDuration;
-        InvalidMethodsName = invalidMethodsName;
-    }
-
-    /// <summary>
-    /// Gets the test name of the class with tests.
-    /// </summary>
-    public string Name { get; private set; }
-
-    /// <summary>
-    /// Gets the time spent on all tests in milliseconds.
-    /// </summary>
-    public long TotalDuration { get; private set; }
-
-    /// <summary>
-    /// Gets the status of the test.
-    /// </summary>
-    public IEnumerable<TestMethodResult> TestResults { get; private set; }
-
-    /// <summary>
-    /// Gets the invalid methods of the class.
-    /// </summary>
-    public List<string>? InvalidMethodsName { get; private set; }
 }

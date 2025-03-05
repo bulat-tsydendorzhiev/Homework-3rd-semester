@@ -22,7 +22,7 @@ public class TestMethod
     private readonly IEnumerable<MethodInfo> _afterMethods;
 
     private readonly string? _ignoreMessage = null;
-    private Type? _expectedExceptionType = null;
+    private readonly Type? _expectedExceptionType = null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestMethod"/> class.
@@ -38,7 +38,7 @@ public class TestMethod
         _beforeMethods = beforeMethods;
         _afterMethods = afterMethods;
 
-        var testAttribute = test.GetCustomAttribute<MyTestAttribute>() !;
+        var testAttribute = test.GetCustomAttribute<MyTestAttribute>()!;
         _ignoreMessage = testAttribute.IgnoreMessage;
         _expectedExceptionType = testAttribute.ExpectedExceptionType;
     }
@@ -51,7 +51,7 @@ public class TestMethod
     {
         if (_ignoreMessage is not null)
         {
-            return new TestMethodResult(_test.Name, MyTestStatus.Ignored, 0, ignoreMessage: _ignoreMessage);
+            return new TestMethodResult(_test.Name, MyTestStatus.Ignored, 0, IgnoreMessage: _ignoreMessage);
         }
 
         var stopWatch = new Stopwatch();
@@ -65,7 +65,7 @@ public class TestMethod
         catch (Exception e)
         {
             errorMessage = $"Test was cancelled due to \"Before\" method {e.InnerException?.InnerException?.GetType()}";
-            return new TestMethodResult(_test.Name, MyTestStatus.Cancelled, 0, errorMessage: errorMessage);
+            return new TestMethodResult(_test.Name, MyTestStatus.Cancelled, 0, ErrorMessage: errorMessage);
         }
 
         stopWatch.Start();
@@ -87,8 +87,8 @@ public class TestMethod
                                 ? $"Expected {_expectedExceptionType} but {occuredExceptionType} occured."
                                 : occuredExceptionType != _expectedExceptionType
                                 ? $"Unexpected exception: {occuredExceptionType}"
-                                : string.Empty;
-            status = errorMessage == string.Empty
+                                : "no errors";
+            status = errorMessage == "no errors"
                 ? MyTestStatus.Passed
                 : MyTestStatus.Failed;
         }
@@ -105,7 +105,18 @@ public class TestMethod
             }
         }
 
-        return new TestMethodResult(_test.Name, status, stopWatch.ElapsedMilliseconds, errorMessage: errorMessage);
+        if (_expectedExceptionType is not null && errorMessage == string.Empty)
+        {
+            errorMessage = $"Expected {_expectedExceptionType} but it didn't occured";
+            return new TestMethodResult(_test.Name, MyTestStatus.Failed, stopWatch.ElapsedMilliseconds, ErrorMessage: errorMessage);
+        }
+
+        if (status == MyTestStatus.Passed)
+        {
+            errorMessage = string.Empty;
+        }
+
+        return new TestMethodResult(_test.Name, status, stopWatch.ElapsedMilliseconds, ErrorMessage: errorMessage);
     }
 
     private void InvokeMethods(IEnumerable<MethodInfo> methods)

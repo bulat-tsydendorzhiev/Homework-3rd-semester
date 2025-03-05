@@ -22,7 +22,7 @@ public static class Printer
         await writer.WriteLineAsync($"Assembly name: {assemblyTestResult.Name}");
         await writer.WriteLineAsync($"Total duration of tests in test classes(ms): {assemblyTestResult.TotalDuration}");
 
-        foreach (var classResult in assemblyTestResult.TestResults)
+        foreach (var classResult in assemblyTestResult.ClassesTestResults)
         {
             await PrintReportForClassAsync(classResult, writer);
         }

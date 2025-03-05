@@ -4,6 +4,7 @@
 // </copyright>
 namespace MyNUnit;
 
+using System.Collections.Concurrent;
 using System.Reflection;
 using MyNUnit.TestComponents;
 
@@ -27,7 +28,7 @@ public static class TestRunner
             .Select(fileName => new TestAssembly(Assembly.LoadFrom(fileName)))
             .ToList();
 
-        var result = new List<TestAssemblyResult>();
+        var result = new ConcurrentBag<TestAssemblyResult>();
 
         Parallel.ForEach(assemblies, assembly => result.Add(assembly.RunTests()));
 

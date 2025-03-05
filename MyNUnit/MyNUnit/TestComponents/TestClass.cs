@@ -38,15 +38,18 @@ public class TestClass
         CheckInvalidClassMethods(_beforeClassMethods);
         CheckInvalidClassMethods(_afterClassMethods);
 
-        _testMethods = GetMethodsWithAttribute(typeof(MyTestAttribute), methods)
-            .Select(method =>
-            {
-                var instance = Activator.CreateInstance(testingClass);
+        if (_invalidMethods.Count == 0)
+        {
+            InvokeClassMethods(_beforeClassMethods);
 
-                ArgumentNullException.ThrowIfNull(instance);
+            _testMethods = GetMethodsWithAttribute(typeof(MyTestAttribute), methods)
+                .Select(method =>
+                {
+                    var instance = Activator.CreateInstance(testingClass) ?? throw new NullReferenceException();
 
-                return new TestMethod(instance, method, beforeMethods, afterMethods);
-            }).ToList();
+                    return new TestMethod(instance, method, beforeMethods, afterMethods);
+                }).ToList();
+        }
     }
 
     /// <summary>
@@ -67,7 +70,6 @@ public class TestClass
 
         var result = new ConcurrentBag<TestMethodResult>();
 
-        InvokeClassMethods(_beforeClassMethods);
         Parallel.ForEach(_testMethods, testMethod => result.Add(testMethod.Run()));
         InvokeClassMethods(_afterClassMethods);
 

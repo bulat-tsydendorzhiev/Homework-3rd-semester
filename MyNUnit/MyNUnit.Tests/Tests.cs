@@ -4,24 +4,33 @@
 // </copyright>
 namespace MyNUnit.Tests;
 
+using System.Reflection;
 using MyNUnit.Attributes;
 using MyNUnit.TestComponents;
-using System.Reflection;
 
+/// <summary>
+/// Tests to check correctness of the MyNUnit work.
+/// </summary>
 public class Tests
 {
-    private const string path = "../../../../TestCases/bin/Debug/net9.0/TestCases.dll";
+    private const string Path = "../../../../TestCases/bin/Debug/net9.0/TestCases.dll";
     private Assembly _assembly;
     private TestAssemblyResult _assemblyResults;
 
+    /// <summary>
+    /// Makes Setup to work with tests.
+    /// </summary>
     [OneTimeSetUp]
     public void Setup()
     {
-        _assembly = Assembly.LoadFrom(path);
-        
+        _assembly = Assembly.LoadFrom(Path);
+
         _assemblyResults = new TestAssembly(_assembly).RunTests();
     }
 
+    /// <summary>
+    /// Checks whether before and after methods are invoked correct number of times.
+    /// </summary>
     [Test]
     public void Before_And_After_ShouldBe_ExpectedValue()
     {
@@ -35,6 +44,9 @@ public class Tests
         Assert.That(afterMethodInvokesCount, Is.EqualTo(expectedNumberOfInvokes));
     }
 
+    /// <summary>
+    /// Checks whether before and after class methods are invoked one time.
+    /// </summary>
     [Test]
     public void Before_And_AfterClass_ShouldBe_ExpectedValue()
     {
@@ -48,6 +60,9 @@ public class Tests
         Assert.That(afterClassMethodInvokesCount, Is.EqualTo(ExpectedNumberOfInvokes));
     }
 
+    /// <summary>
+    /// Checks whether non-static before and after class are invoked 0 times.
+    /// </summary>
     [Test]
     public void Invalid_Before_And_AfterClass_ShouldBe_ExpectedValue()
     {
@@ -61,6 +76,11 @@ public class Tests
         Assert.That(afterClassMethodInvokesCount, Is.EqualTo(ExpectedNumberOfInvokes));
     }
 
+    /// <summary>
+    /// Checks whether test cases' test results returns expected status.
+    /// </summary>
+    /// <param name="className">Name of class in the assembly.</param>
+    /// <param name="expectedStatus">Status that expects from specified scenario.</param>
     [TestCase("FailedTests", MyTestStatus.Failed)]
     [TestCase("IgnoredTests", MyTestStatus.Ignored)]
     [TestCase("PassedTests", MyTestStatus.Passed)]
@@ -68,7 +88,7 @@ public class Tests
     [TestCase("CancelledTestsBecauseOfAfter", MyTestStatus.Cancelled)]
     public void TestCases_ShouldHave_ExpectedStatus(string className, MyTestStatus expectedStatus)
     {
-        foreach (var classTestResult in _assemblyResults.TestResults)
+        foreach (var classTestResult in _assemblyResults.ClassesTestResults)
         {
             if (classTestResult.Name == className)
             {
