@@ -1,4 +1,5 @@
 ﻿document.addEventListener("DOMContentLoaded", () => {
+    const dropSection = document.querySelector(".drop_section");
     const input = document.querySelector(".input");
     const chooseButton = document.querySelector(".choose_button");
     const showSection = document.querySelector(".show_section");
@@ -6,12 +7,36 @@
 
     const files = new Set();
 
+    const hoverClassName = "hover";
+
+    dropSection.addEventListener("dragenter", (event) => {
+        event.preventDefault();
+        dropSection.classList.add(hoverClassName);
+    });
+
+    dropSection.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        dropSection.classList.add(hoverClassName);
+    });
+
+    dropSection.addEventListener("dragleave", (event) => {
+        event.preventDefault();
+        dropSection.classList.remove(hoverClassName);
+    });
+
+    dropSection.addEventListener("drop", (event) => {
+        event.preventDefault();
+        dropSection.classList.remove(hoverClassName);
+
+        addNewFiles(event, true);
+    });
+
     chooseButton.addEventListener("click", () => {
         input.click();
     });
 
     input.addEventListener("change", (event) => {
-        addNewFiles(event);
+        addNewFiles(event, false);
     });
 
     uploadButton.addEventListener("click", (event) => {
@@ -27,8 +52,8 @@
         files.clear();
     })
 
-    const addNewFiles = (event) => {
-        const targetFiles = event.target.files;
+    const addNewFiles = (event, isDropFile) => {
+        const targetFiles = isDropFile ? event.dataTransfer.files : event.target.files;
         const newFiles = Array.from(targetFiles);
         newFiles.forEach((file) => {
             if (!files.has(file)) {
