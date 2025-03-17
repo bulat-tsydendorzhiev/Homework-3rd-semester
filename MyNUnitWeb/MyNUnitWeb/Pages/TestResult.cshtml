@@ -1,0 +1,40 @@
+﻿@page
+@model MyNUnitWeb.Pages.TestResultModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Test results</title>
+    <link rel="stylesheet" href="~/css/results.css" />
+</head>
+<body>
+    <h2>Test methods results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var testResult in Model.Tests)
+            {
+                <tr>
+                    <td>@testResult.Name</td>
+                    <td>@testResult.Duration</td>
+                    <td>
+                        @(testResult.Status == 0 ? "Passed"
+                                            : testResult.Status == 1 ? "Failed"
+                                            : testResult.Status == 2 ? "Cancelled"
+                                            : "Ignored")
+                </td>
+                <td>@testResult.Message</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>
