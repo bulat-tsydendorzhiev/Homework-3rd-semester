@@ -1,0 +1,51 @@
+﻿@page
+@model MyNUnitWeb.Pages.JournalModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Journal</title>
+    <link rel="stylesheet" href="~/css/navigationBar.css" />
+    <link rel="stylesheet" href="~/css/results.css" />
+</head>
+<body>
+    <div class="navigation_bar">
+        <h1 class="MyNUnitWeb_title">MyNUnitWeb</h1>
+        <div class="redirections">
+            <button class="redirection" type="button"
+                    onclick="document.location='/'">
+                Home
+            </button>
+        </div>
+    </div>
+    <h2>Test run results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>Total duration</th>
+                <th>Number of tests</th>
+                <th>Number of passed tests</th>
+                <th>Number of failed tests</th>
+                <th>Number of ignored tests</th>
+                <th>Number of cancelled tests</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var testResult in Model.TestRuns)
+            {
+                <tr>
+                    <td>@testResult.Id</td>
+                    <td>@testResult.TotalDuration</td>
+                    <td>@testResult.NumberOfTests</td>
+                    <td>@testResult.NumberOfPassedTests</td>
+                    <td>@testResult.NumberOfFailedTests</td>
+                    <td>@testResult.NumberOfIgnoredTests</td>
+                    <td>@testResult.NumberOfCancelledTests</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>

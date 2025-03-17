@@ -1,0 +1,31 @@
+﻿.navigation_bar {
+    display: flex;
+    align-content: space-between;
+    width: 100%;
+    background-color: #3f51b5;
+    -moz-user-select: -moz-none;
+    -webkit-user-select: none;
+}
+
+.MyNUnitWeb_title {
+    color: white;
+    margin-left: 10px;
+}
+
+.redirections {
+    display: inline-flex;
+    margin-left: 7px;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.redirection {
+    color: white;
+    background-color: #3f51b5;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    margin-top: auto;
+    margin-bottom: auto;
+    font-size: 25px;
+}
