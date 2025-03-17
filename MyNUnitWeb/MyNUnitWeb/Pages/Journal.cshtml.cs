@@ -1,4 +1,4 @@
-// <copyright file="TestResult.cshtml.cs" company="Bulat Tsydendorzhiev">
+// <copyright file="Journal.cshtml.cs" company="Bulat Tsydendorzhiev">
 // Copyright (c) Bulat Tsydendorzhiev. All Rights Reserved.
 // Licensed under the MIT License. See LICENSE in the repository root for license information.
 // </copyright>
@@ -9,27 +9,25 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using MyNUnitWeb.Data;
 
 /// <summary>
-/// Represents a model of a result of the tests.
+/// Represents a model of a journal of tests running.
 /// </summary>
 /// <param name="context">Database context with test results.</param>
 [BindProperties]
-public class TestResultModel(TestRunDbContext context)
+public class JournalModel(TestRunDbContext context)
     : PageModel
 {
     /// <summary>
-    /// Gets the tests result.
+    /// Gets the test runs.
     /// </summary>
-    public IList<TestResult> Tests { get; private set; } = [];
+    public IList<TestRunResult> TestRuns { get; private set; } = [];
 
     /// <summary>
-    /// Gets the test result from database by its id.
+    /// Gets the test runs from database.
     /// </summary>
-    /// <param name="id">Id of the test in the database.</param>
-    public void OnGet(int id)
+    public void OnGet()
     {
-        Tests = context.TestResults
-            .OrderBy(test => test.Id)
-            .Where(test => test.TestRunId == id)
+        TestRuns = context.TestRunResults
+            .OrderBy(testRun => testRun.Id)
             .ToList();
     }
 }
